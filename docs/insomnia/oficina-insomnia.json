@@ -1,0 +1,793 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-09-28T12:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v10.0.0",
+  "resources": [
+    {
+      "_id": "wrk_oficina",
+      "_type": "workspace",
+      "name": "Oficina Tech Challenge",
+      "description": "API REST do MVP da oficina"
+    },
+    {
+      "_id": "env_oficina",
+      "_type": "environment",
+      "parentId": "wrk_oficina",
+      "name": "Local",
+      "data": {
+        "base_url": "http://localhost:3000",
+        "jwt": "",
+        "customer_id": "1",
+        "vehicle_id": "1",
+        "service_id": "1",
+        "part_id": "1",
+        "work_order_id": "1",
+        "tracking_code": "",
+        "workshop_id": "1"
+      }
+    },
+    {
+      "_id": "req_health",
+      "_type": "request",
+      "parentId": "wrk_oficina",
+      "name": "Saúde da API",
+      "method": "GET",
+      "url": "{{ _.base_url }}/health"
+    },
+    {
+      "_id": "req_openapi",
+      "_type": "request",
+      "parentId": "wrk_oficina",
+      "name": "Swagger / OpenAPI",
+      "method": "GET",
+      "url": "{{ _.base_url }}/openapi"
+    },
+    {
+      "_id": "grp_auth",
+      "_type": "request_group",
+      "parentId": "wrk_oficina",
+      "name": "Autenticação"
+    },
+    {
+      "_id": "req_login",
+      "_type": "request",
+      "parentId": "grp_auth",
+      "name": "Login administrativo",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/v1/auth/login",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"admin@oficina.local\",\n  \"password\": \"TroqueEstaSenha123!\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "grp_customers",
+      "_type": "request_group",
+      "parentId": "wrk_oficina",
+      "name": "Clientes e veículos"
+    },
+    {
+      "_id": "req_customers",
+      "_type": "request",
+      "parentId": "grp_customers",
+      "name": "Listar clientes",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/customers",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_customer_create",
+      "_type": "request",
+      "parentId": "grp_customers",
+      "name": "Criar cliente (CPF inválido para teste)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/v1/customers",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Cliente Exemplo\",\n  \"document\": \"11111111111\",\n  \"email\": \"cliente@example.test\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_customer_detail",
+      "_type": "request",
+      "parentId": "grp_customers",
+      "name": "Detalhar cliente",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/customers/{{ _.customer_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_customer_patch",
+      "_type": "request",
+      "parentId": "grp_customers",
+      "name": "Atualizar cliente",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/api/v1/customers/{{ _.customer_id }}",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"phone\": \"+5511999990001\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_customer_delete",
+      "_type": "request",
+      "parentId": "grp_customers",
+      "name": "Erro esperado: excluir ID inexistente",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/api/v1/customers/99999",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_vehicles",
+      "_type": "request",
+      "parentId": "grp_customers",
+      "name": "Listar veículos",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/vehicles",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_vehicle_detail",
+      "_type": "request",
+      "parentId": "grp_customers",
+      "name": "Detalhar veículo",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/vehicles/{{ _.vehicle_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_vehicle_create",
+      "_type": "request",
+      "parentId": "grp_customers",
+      "name": "Criar veículo",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/v1/vehicles",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"customerId\": {{ _.customer_id }},\n  \"plate\": \"XYZ2B45\",\n  \"brand\": \"Toyota\",\n  \"model\": \"Corolla\",\n  \"year\": 2023\n}"
+      },
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_vehicle_patch",
+      "_type": "request",
+      "parentId": "grp_customers",
+      "name": "Atualizar veículo",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/api/v1/vehicles/{{ _.vehicle_id }}",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"year\": 2024\n}"
+      },
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_vehicle_delete",
+      "_type": "request",
+      "parentId": "grp_customers",
+      "name": "Erro esperado: excluir ID inexistente",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/api/v1/vehicles/99999",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        }
+      ]
+    },
+    {
+      "_id": "grp_catalog",
+      "_type": "request_group",
+      "parentId": "wrk_oficina",
+      "name": "Serviços e estoque"
+    },
+    {
+      "_id": "req_services",
+      "_type": "request",
+      "parentId": "grp_catalog",
+      "name": "Listar serviços",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/services",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_service_detail",
+      "_type": "request",
+      "parentId": "grp_catalog",
+      "name": "Detalhar serviço",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/services/{{ _.service_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_service_create",
+      "_type": "request",
+      "parentId": "grp_catalog",
+      "name": "Criar serviço",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/v1/services",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Revisão básica\",\n  \"description\": \"Revisão preventiva\",\n  \"priceCents\": 25000,\n  \"estimatedMinutes\": 90\n}"
+      },
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_service_patch",
+      "_type": "request",
+      "parentId": "grp_catalog",
+      "name": "Atualizar serviço",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/api/v1/services/{{ _.service_id }}",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"priceCents\": 19000\n}"
+      },
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_service_delete",
+      "_type": "request",
+      "parentId": "grp_catalog",
+      "name": "Desativar serviço",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/api/v1/services/{{ _.service_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_parts",
+      "_type": "request",
+      "parentId": "grp_catalog",
+      "name": "Listar peças e estoque",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/parts",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_part_detail",
+      "_type": "request",
+      "parentId": "grp_catalog",
+      "name": "Detalhar peça",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/parts/{{ _.part_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_part_create",
+      "_type": "request",
+      "parentId": "grp_catalog",
+      "name": "Criar peça (troque o SKU se já existir)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/v1/parts",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"sku\": \"DEMO-INSUMO-001\",\n  \"name\": \"Luva descartável\",\n  \"description\": \"Insumo para demonstração\",\n  \"priceCents\": 500,\n  \"stockQuantity\": 10,\n  \"minimumStock\": 2\n}"
+      },
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_movement",
+      "_type": "request",
+      "parentId": "grp_catalog",
+      "name": "Entrada de estoque",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/v1/parts/{{ _.part_id }}/movements",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"quantityDelta\": 5,\n  \"reason\": \"Reposição de demonstração\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_movement_list",
+      "_type": "request",
+      "parentId": "grp_catalog",
+      "name": "Histórico de estoque",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/parts/{{ _.part_id }}/movements",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_part_patch",
+      "_type": "request",
+      "parentId": "grp_catalog",
+      "name": "Atualizar peça",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/api/v1/parts/{{ _.part_id }}",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"minimumStock\": 6\n}"
+      },
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_part_delete",
+      "_type": "request",
+      "parentId": "grp_catalog",
+      "name": "Desativar peça",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/api/v1/parts/{{ _.part_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        }
+      ]
+    },
+    {
+      "_id": "grp_orders",
+      "_type": "request_group",
+      "parentId": "wrk_oficina",
+      "name": "Ordens de serviço"
+    },
+    {
+      "_id": "req_order_create",
+      "_type": "request",
+      "parentId": "grp_orders",
+      "name": "Criar OS e orçamento",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/v1/work-orders",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"customerId\": {{ _.customer_id }},\n  \"vehicleId\": {{ _.vehicle_id }},\n  \"complaint\": \"Revisão e troca de óleo\",\n  \"items\": [\n    { \"type\": \"SERVICE\", \"id\": {{ _.service_id }}, \"quantity\": 1 },\n    { \"type\": \"PART\", \"id\": {{ _.part_id }}, \"quantity\": 1 }\n  ]\n}"
+      },
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_orders",
+      "_type": "request",
+      "parentId": "grp_orders",
+      "name": "Listar OS",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/work-orders",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_order_additional",
+      "_type": "request",
+      "parentId": "grp_orders",
+      "name": "Propor reparo adicional (exige nova aprovação)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/v1/work-orders/{{ _.work_order_id }}/items",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"type\": \"PART\",\n  \"id\": {{ _.part_id }},\n  \"quantity\": 1\n}"
+      },
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_order_detail",
+      "_type": "request",
+      "parentId": "grp_orders",
+      "name": "Detalhar OS",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/work-orders/{{ _.work_order_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_status_diagnosis",
+      "_type": "request",
+      "parentId": "grp_orders",
+      "name": "Status: em diagnóstico",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/v1/work-orders/{{ _.work_order_id }}/status",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"status\": \"DIAGNOSIS\",\n  \"note\": \"Veículo recebido para diagnóstico\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_status_quote",
+      "_type": "request",
+      "parentId": "grp_orders",
+      "name": "Status: aguardando aprovação",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/v1/work-orders/{{ _.work_order_id }}/status",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"status\": \"AWAITING_APPROVAL\",\n  \"note\": \"Orçamento enviado pela API\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_public_track",
+      "_type": "request",
+      "parentId": "grp_orders",
+      "name": "Público: acompanhar OS",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/public/work-orders/{{ _.tracking_code }}"
+    },
+    {
+      "_id": "req_public_approve",
+      "_type": "request",
+      "parentId": "grp_orders",
+      "name": "Público: aprovar orçamento",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/v1/public/work-orders/{{ _.tracking_code }}/decision",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"approved\": true\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_status_finished",
+      "_type": "request",
+      "parentId": "grp_orders",
+      "name": "Status: finalizada",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/v1/work-orders/{{ _.work_order_id }}/status",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"status\": \"FINISHED\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_status_delivered",
+      "_type": "request",
+      "parentId": "grp_orders",
+      "name": "Status: entregue",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/v1/work-orders/{{ _.work_order_id }}/status",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"status\": \"DELIVERED\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_order_history",
+      "_type": "request",
+      "parentId": "grp_orders",
+      "name": "Histórico da OS",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/work-orders/{{ _.work_order_id }}/history",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_public_reject",
+      "_type": "request",
+      "parentId": "grp_orders",
+      "name": "Público: rejeitar orçamento",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/v1/public/work-orders/{{ _.tracking_code }}/decision",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"approved\": false,\n  \"reason\": \"Solicito revisar o orçamento\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_invalid_transition",
+      "_type": "request",
+      "parentId": "grp_orders",
+      "name": "Erro esperado: transição inválida",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/v1/work-orders/{{ _.work_order_id }}/status",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"status\": \"DELIVERED\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_metrics",
+      "_type": "request",
+      "parentId": "grp_orders",
+      "name": "Métrica: tempo médio",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/metrics/average-execution-time",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        }
+      ]
+    },
+    {
+      "_id": "grp_workshop",
+      "_type": "request_group",
+      "parentId": "wrk_oficina",
+      "name": "Oficina"
+    },
+    {
+      "_id": "req_workshop_create",
+      "_type": "request",
+      "parentId": "grp_workshop",
+      "name": "Criar oficina",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/v1/workshops",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Oficina Exemplo\",\n  \"document\": \"11222333000181\",\n  \"address\": \"Rua das Oficinas, 10\",\n  \"phone\": \"+5511999990000\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_workshop_get",
+      "_type": "request",
+      "parentId": "grp_workshop",
+      "name": "Consultar oficina",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/workshops/{{ _.workshop_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_customer_delete_selected",
+      "_type": "request",
+      "parentId": "grp_customers",
+      "name": "Excluir cliente selecionado (use registro descartável)",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/api/v1/customers/{{ _.customer_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_vehicle_delete_selected",
+      "_type": "request",
+      "parentId": "grp_customers",
+      "name": "Excluir veículo selecionado (use registro descartável)",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/api/v1/vehicles/{{ _.vehicle_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.jwt }}"
+        }
+      ]
+    }
+  ]
+}
