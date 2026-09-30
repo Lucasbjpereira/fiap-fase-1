@@ -19,7 +19,7 @@ Pré-requisitos: Docker Desktop com Compose v2. Na raiz:
 docker compose up --build
 ```
 
-O Compose aguarda o healthcheck do banco. A API executa a migração e o seed ao iniciar. Endereços: API `http://localhost:3000`, saúde `http://localhost:3000/health`, OpenAPI/Scalar `http://localhost:3000/openapi` e especificação JSON `http://localhost:3000/openapi/json`. A porta do PostgreSQL publicada no host é 5433 para evitar conflito local; entre containers, a API usa 5432.
+O Compose aguarda o healthcheck do banco. A API executa a migração e o seed ao iniciar. Endereços: API `http://localhost:3000`, saúde `http://localhost:3000/health`, OpenAPI/Scalar `http://localhost:3000/openapi` e especificação JSON `http://localhost:3000/openapi/json`. A porta do PostgreSQL publicada no host é 5432 para evitar conflito local; entre containers, a API usa 5432.
 
 Credenciais fictícias locais: `admin@oficina.local` / `TroqueEstaSenha123!`. Troque-as antes de publicar ou compartilhar o ambiente. Para encerrar: `docker compose down`; para apagar também o banco local: `docker compose down -v`.
 
@@ -62,7 +62,7 @@ const customer = await createCustomer.execute({ name: 'Marina Souza', document: 
 // Injete unitOfWork nos casos de uso transacionais e workOrderQueries nas consultas.
 ```
 
-O limiar de cobertura configurado é 80% em linhas e funções sobre domínio e casos de uso quando `test:coverage` é executado. Os testes integrados ficam habilitados ao executar `RUN_INTEGRATION=true DATABASE_URL=postgres://oficina:oficina_local@localhost:5433/oficina bun run test:coverage` com Docker Compose ativo e banco migrado/populado. O resultado observado está em [relatório de auditoria](docs/security/dependency-audit.md) e [verificações executadas](docs/evidencias/verificacoes.md).
+O limiar de cobertura configurado é 80% em linhas e funções sobre domínio e casos de uso quando `test:coverage` é executado. Os testes integrados ficam habilitados ao executar `RUN_INTEGRATION=true DATABASE_URL=postgres://oficina:oficina_local@localhost:5432/oficina bun run test:coverage` com Docker Compose ativo e banco migrado/populado. O resultado observado está em [relatório de auditoria](docs/security/dependency-audit.md) e [verificações executadas](docs/evidencias/verificacoes.md).
 
 ## Estrutura
 

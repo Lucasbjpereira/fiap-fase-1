@@ -6,7 +6,7 @@ Execuções registradas em 2026-09-28 e 2026-09-29, após a reconstrução da ar
 |---|---|
 | `bun run typecheck` | Aprovado, sem erros TypeScript. |
 | `bun run test:memory` | 2 testes passaram; 0 falharam. Casos de uso de cadastros, autenticação e fluxo de OS rodaram sem PostgreSQL; aprovação com estoque insuficiente comprovou rollback de estoque, decisão e status. |
-| `RUN_INTEGRATION=true DATABASE_URL=postgres://oficina:oficina_local@localhost:5433/oficina bun run test:coverage` | 16 testes passaram; 0 falharam. Inclui os testes em memória, regras de domínio e testes de integração contra PostgreSQL ativo. |
+| `RUN_INTEGRATION=true DATABASE_URL=postgres://oficina:oficina_local@localhost:5432/oficina bun run test:coverage` | 16 testes passaram; 0 falharam. Inclui os testes em memória, regras de domínio e testes de integração contra PostgreSQL ativo. |
 | Cobertura dos arquivos de domínio e aplicação | 99,83% de linhas e 100% de funções; limiar configurado de 80%. `application/errors.ts` foi excluído da medição por conter somente o tipo de erro e sua construção; o mapeamento HTTP de erros está na camada `presentation`, também fora desse limiar. |
 | `bun run security:audit` | Nenhuma vulnerabilidade reportada nas dependências; ver `docs/security/dependency-audit.md`. |
 | `docker compose up --build -d` | Build da arquitetura DDD concluído em 2026-09-29; API iniciou e `/health` respondeu 200 com PostgreSQL conectado. |
