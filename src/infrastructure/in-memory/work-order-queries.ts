@@ -20,7 +20,7 @@ export class InMemoryWorkOrderQueries implements WorkOrderQueries {
     return {
       id: order.id, tracking_code: order.trackingCode.value, customer_id: order.customerId,
       vehicle_id: order.vehicleId, complaint: order.complaint, status: order.status,
-      quote_total_cents: record.quoteTotalCents, opened_at: record.openedAt,
+      quote_total_cents: record.quoteTotalCents, quote_version: order.quoteVersion.value, opened_at: record.openedAt,
       started_at: record.startedAt ?? null, finished_at: record.finishedAt ?? null,
       delivered_at: record.deliveredAt ?? null, updated_at: record.updatedAt
     };
@@ -48,7 +48,7 @@ export class InMemoryWorkOrderQueries implements WorkOrderQueries {
       items: record.order.items.map(itemRow), history: record.order.history.map(historyRow),
       decisions: record.order.decisions.map(decision => ({
         approved: decision.approved, reason: decision.reason ?? null,
-        quote_total_cents: decision.total.cents, created_at: decision.createdAt
+        quote_total_cents: decision.total.cents, quote_version: decision.quoteVersion.value, created_at: decision.createdAt
       }))
     };
   }
@@ -62,7 +62,7 @@ export class InMemoryWorkOrderQueries implements WorkOrderQueries {
     return {
       trackingCode: order.trackingCode.value, status: order.status, complaint: order.complaint,
       vehicle: { brand: vehicle.brand, model: vehicle.model, plate: vehicle.plate.value },
-      quoteTotalCents: record.quoteTotalCents,
+      quoteTotalCents: record.quoteTotalCents, quoteVersion: order.quoteVersion.value,
       items: order.items.map(item => ({ kind: item.kind, description: item.description,
         quantity: item.quantity.value, unit_price_cents: item.unitPrice.cents })),
       openedAt: record.openedAt, updatedAt: record.updatedAt

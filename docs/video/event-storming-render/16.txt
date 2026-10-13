@@ -1,0 +1,1 @@
+Histórico e tempo médio são consultas de auditoria e análise. Eles não alteram o agregado e não geram eventos de sucesso da ordem de serviço.

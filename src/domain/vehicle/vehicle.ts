@@ -5,6 +5,7 @@ export class Vehicle {
   constructor(readonly id: number | undefined, readonly customerId: number, readonly plate: VehiclePlate,
     readonly brand: string, readonly model: string, readonly year: number) {
     if (!Number.isSafeInteger(customerId) || customerId <= 0) throw new DomainError('Cliente inválido');
+    Object.freeze(this);
     if (!brand.trim() || !model.trim() || !Number.isSafeInteger(year) || year < 1950 || year > 2100) throw new DomainError('Veículo inválido');
   }
   static create(input: { customerId: number; plate: string; brand: string; model: string; year: number }): Vehicle {

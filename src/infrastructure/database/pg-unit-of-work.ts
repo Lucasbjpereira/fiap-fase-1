@@ -1,3 +1,4 @@
+import { PgDomainEventStore } from './domain-event-store';
 import { client } from './connection';
 import type { SqlConnection } from './postgres-dao';
 import type { UnitOfWork, RepositoryContext } from '../../application/unit-of-work';
@@ -14,7 +15,7 @@ export function repositoryContext(sql: SqlConnection): RepositoryContext {
     customers: new PgCustomerRepository(sql), vehicles: new PgVehicleRepository(sql),
     services: new PgServiceRepository(sql), parts: new PgPartRepository(sql),
     workOrders: new PgWorkOrderRepository(sql), workshops: new PgWorkshopRepository(sql),
-    users: new PgAdminUserRepository(sql)
+    users: new PgAdminUserRepository(sql), events: new PgDomainEventStore(sql)
   };
 }
 

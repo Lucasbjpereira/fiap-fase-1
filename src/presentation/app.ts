@@ -11,6 +11,7 @@ import { customerRoutes } from './routes/customer-routes';
 import { vehicleRoutes } from './routes/vehicle-routes';
 import { serviceRoutes } from './routes/service-routes';
 import { partRoutes } from './routes/part-routes';
+import { eventStormingRoutes } from './routes/event-storming-routes';
 import { workshopRoutes } from './routes/workshop-routes';
 import { publicWorkOrderRoutes, workOrderRoutes } from './routes/work-order-routes';
 
@@ -50,6 +51,7 @@ export const app = new Elysia()
     return { error: 'Erro interno' };
   })
   .get('/health', async () => { await db.execute(sql`SELECT 1`); return { status: 'ok', database: 'connected' }; })
+  .use(eventStormingRoutes)
   .group('/api/v1', api => api
     .use(jwt({ name: 'jwt', secret: jwtSecret, exp: '2h' }))
     .post('/auth/login', async ({ body, jwt }) => {

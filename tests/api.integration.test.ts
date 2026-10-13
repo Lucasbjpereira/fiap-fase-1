@@ -39,13 +39,18 @@ describe.skipIf(!enabled)('fluxo integrado da API (requer PostgreSQL migrado e s
     }
     const tracking = await fetch(`${baseUrl}/api/v1/public/work-orders/${order.trackingCode}`);
     expect(tracking.status).toBe(200);
-    const decision = await fetch(`${baseUrl}/api/v1/public/work-orders/${order.trackingCode}/decision`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ approved: true }) });
+    expect((await tracking.json() as { quoteVersion: number }).quoteVersion).toBe(1);
+    const rejected = await fetch(`${baseUrl}/api/v1/public/work-orders/${order.trackingCode}/decision`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ approved: false, quoteVersion: 1, reason: 'Revisão do cliente' }) });
+    expect(rejected.status).toBe(200);
+    const decision = await fetch(`${baseUrl}/api/v1/public/work-orders/${order.trackingCode}/decision`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ approved: true, quoteVersion: 1 }) });
     expect(decision.status).toBe(200);
     expect((await decision.json() as { approved: boolean }).approved).toBe(true);
     const additional = await fetch(`${baseUrl}/api/v1/work-orders/${order.id}/items`, { method: 'POST', headers, body: JSON.stringify({ type: 'PART', id: part.id, quantity: 1 }) });
     expect(additional.status).toBe(200);
     expect((await additional.json() as { quoteTotalCents: number }).quoteTotalCents).toBe(order.quote_total_cents + part.priceCents);
-    const secondApproval = await fetch(`${baseUrl}/api/v1/public/work-orders/${order.trackingCode}/decision`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ approved: true }) });
+    const staleApproval = await fetch(`${baseUrl}/api/v1/public/work-orders/${order.trackingCode}/decision`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ approved: true, quoteVersion: 1 }) });
+    expect(staleApproval.status).toBe(409);
+    const secondApproval = await fetch(`${baseUrl}/api/v1/public/work-orders/${order.trackingCode}/decision`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ approved: true, quoteVersion: 2 }) });
     expect(secondApproval.status).toBe(200);
     for (const status of ['FINISHED', 'DELIVERED']) {
       const response = await fetch(`${baseUrl}/api/v1/work-orders/${order.id}/status`, { method: 'POST', headers, body: JSON.stringify({ status }) });

@@ -1,0 +1,151 @@
+flowchart LR
+  classDef ev fill:#ffca28,stroke:#172033;
+  classDef cmd fill:#00c5cf,stroke:#172033;
+  classDef ag fill:#fff2a1,stroke:#172033;
+  classDef ml fill:#76d66c,stroke:#172033;
+  classDef pol fill:#e58be8,stroke:#172033;
+  classDef pa fill:#ff6c88,stroke:#172033;
+  subgraph BC0["Operação da oficina"]
+  A0["AT: Administrador"] --> C0["CMD: Cadastrar oficina"]:::cmd
+  R0["ML: Dados da oficina"]:::ml --> A0
+  G0_Workshop["AG: Workshop"]:::ag
+  C0 --> G0_Workshop
+  G0_Workshop --> E0_0["EV: Oficina cadastrada"]:::ev
+  E0_0 --> P0["POL: Nome/endereço válidos; documento válido"]:::pol
+  end
+  subgraph BC1["Relacionamento com clientes"]
+  A1["AT: Atendente"] --> C1["CMD: Cadastrar cliente"]:::cmd
+  R1["ML: Cadastro de clientes"]:::ml --> A1
+  G1_Customer["AG: Customer"]:::ag
+  C1 --> G1_Customer
+  G1_Customer --> E1_0["EV: Cliente cadastrado"]:::ev
+  E1_0 --> P1["POL: CPF/CNPJ válido e único"]:::pol
+  A2["AT: Atendente"] --> C2["CMD: Alterar contato"]:::cmd
+  R2["ML: Cadastro de clientes"]:::ml --> A2
+  C2 --> G1_Customer
+  G1_Customer --> E2_0["EV: Contato do cliente alterado"]:::ev
+  E2_0 --> P2["POL: Preservar identidade do cliente"]:::pol
+  A3["AT: Atendente"] --> C3["CMD: Vincular veículo"]:::cmd
+  R3["ML: Veículos do cliente"]:::ml --> A3
+  G1_Vehicle["AG: Vehicle"]:::ag
+  C3 --> G1_Vehicle
+  G1_Vehicle --> E3_0["EV: Veículo vinculado ao cliente"]:::ev
+  E3_0 --> P3["POL: Cliente existente; placa válida e única"]:::pol
+  A4["AT: Atendente"] --> C4["CMD: Alterar dados do veículo"]:::cmd
+  R4["ML: Veículos do cliente"]:::ml --> A4
+  C4 --> G1_Vehicle
+  G1_Vehicle --> E4_0["EV: Dados do veículo alterados"]:::ev
+  E4_0 --> P4["POL: Ano válido; preservar dono e placa"]:::pol
+  end
+  subgraph BC2["Catálogo de serviços"]
+  A5["AT: Administrador"] --> C5["CMD: Cadastrar serviço"]:::cmd
+  R5["ML: Catálogo de serviços"]:::ml --> A5
+  G2_Service["AG: Service"]:::ag
+  C5 --> G2_Service
+  G2_Service --> E5_0["EV: Serviço cadastrado"]:::ev
+  E5_0 --> P5["POL: Preço ≥ 0; duração > 0"]:::pol
+  A6["AT: Administrador"] --> C6["CMD: Alterar preço do serviço"]:::cmd
+  R6["ML: Catálogo de serviços"]:::ml --> A6
+  C6 --> G2_Service
+  G2_Service --> E6_0["EV: Preço do serviço alterado"]:::ev
+  E6_0 --> P6["POL: Money em centavos; OS mantém snapshot"]:::pol
+  A7["AT: Administrador"] --> C7["CMD: Desativar serviço"]:::cmd
+  R7["ML: Catálogo de serviços"]:::ml --> A7
+  C7 --> G2_Service
+  G2_Service --> E7_0["EV: Serviço desativado"]:::ev
+  E7_0 --> P7["POL: Bloquear novas inclusões; manter histórico"]:::pol
+  end
+  subgraph BC3["Peças e estoque"]
+  A8["AT: Estoquista"] --> C8["CMD: Cadastrar peça"]:::cmd
+  R8["ML: Catálogo e saldo"]:::ml --> A8
+  G3_Part["AG: Part"]:::ag
+  C8 --> G3_Part
+  G3_Part --> E8_0["EV: Peça cadastrada com saldo inicial"]:::ev
+  E8_0 --> P8["POL: SKU único; saldo inicial ≥ 0"]:::pol
+  A9["AT: Administrador"] --> C9["CMD: Alterar preço da peça"]:::cmd
+  R9["ML: Catálogo e saldo"]:::ml --> A9
+  C9 --> G3_Part
+  G3_Part --> E9_0["EV: Preço da peça alterado"]:::ev
+  E9_0 --> P9["POL: Money; não alterar preço da OS existente"]:::pol
+  A10["AT: Estoquista"] --> C10["CMD: Definir estoque mínimo"]:::cmd
+  R10["ML: Catálogo e saldo"]:::ml --> A10
+  C10 --> G3_Part
+  G3_Part --> E10_0["EV: Estoque mínimo alterado"]:::ev
+  E10_0 --> P10["POL: Mínimo ≥ 0"]:::pol
+  A11["AT: Estoquista"] --> C11["CMD: Receber estoque"]:::cmd
+  R11["ML: Saldo e movimentações"]:::ml --> A11
+  C11 --> G3_Part
+  G3_Part --> E11_0["EV: Entrada de estoque registrada"]:::ev
+  E11_0 --> P11["POL: Quantidade > 0; motivo válido; registrar movimento"]:::pol
+  A12["AT: Estoquista"] --> C12["CMD: Retirar estoque"]:::cmd
+  R12["ML: Saldo e movimentações"]:::ml --> A12
+  C12 --> G3_Part
+  G3_Part --> E12_0["EV: Saída manual registrada"]:::ev
+  E12_0 --> P12["POL: Saldo não negativo; registrar movimento"]:::pol
+  A13["AT: Administrador"] --> C13["CMD: Desativar peça"]:::cmd
+  R13["ML: Catálogo e saldo"]:::ml --> A13
+  C13 --> G3_Part
+  G3_Part --> E13_0["EV: Peça desativada"]:::ev
+  E13_0 --> P13["POL: Bloquear novos usos e consumo"]:::pol
+  A23["AT: Política de aprovação"] --> C23["CMD: Consumir peças aprovadas"]:::cmd
+  R23["ML: Itens pendentes da OS"]:::ml --> A23
+  C23 --> G3_Part
+  G3_Part --> E23_0["EV: Peças consumidas na OS"]:::ev
+  G3_Part --> E23_1["EV: Estoque mínimo atingido"]:::ev
+  E23_0 --> P23["POL: Mesmo UnitOfWork; locks por ID; saldo não negativo"]:::pol
+  end
+  subgraph BC4["Atendimento e reparo"]
+  A14["AT: Atendente"] --> C14["CMD: Receber OS"]:::cmd
+  R14["ML: Cliente, veículo e catálogo"]:::ml --> A14
+  G4_WorkOrder["AG: WorkOrder"]:::ag
+  C14 --> G4_WorkOrder
+  G4_WorkOrder --> E14_0["EV: OS recebida"]:::ev
+  G4_WorkOrder --> E14_1["EV: Orçamento calculado"]:::ev
+  E14_0 --> P14["POL: Veículo do cliente; itens ativos; disponibilidade inicial"]:::pol
+  A15["AT: Equipe técnica"] --> C15["CMD: Iniciar diagnóstico"]:::cmd
+  R15["ML: Fila de OS recebidas"]:::ml --> A15
+  C15 --> G4_WorkOrder
+  G4_WorkOrder --> E15_0["EV: Diagnóstico iniciado"]:::ev
+  E15_0 --> P15["POL: RECEIVED → DIAGNOSIS"]:::pol
+  A16["AT: Equipe técnica"] --> C16["CMD: Apresentar orçamento"]:::cmd
+  R16["ML: Detalhe da OS e orçamento"]:::ml --> A16
+  C16 --> G4_WorkOrder
+  G4_WorkOrder --> E16_0["EV: Orçamento apresentado"]:::ev
+  E16_0 --> P16["POL: DIAGNOSIS → AWAITING_APPROVAL"]:::pol
+  A17["AT: Cliente"] --> C17["CMD: Aprovar orçamento"]:::cmd
+  R17["ML: Acompanhamento público"]:::ml --> A17
+  C17 --> G4_WorkOrder
+  G4_WorkOrder --> E17_0["EV: Orçamento aprovado"]:::ev
+  G4_WorkOrder --> E17_1["EV: Execução iniciada"]:::ev
+  E17_0 --> P17["POL: Versão atual; estoque validado na transação; só então executar"]:::pol
+  A18["AT: Cliente"] --> C18["CMD: Rejeitar orçamento"]:::cmd
+  R18["ML: Acompanhamento público"]:::ml --> A18
+  C18 --> G4_WorkOrder
+  G4_WorkOrder --> E18_0["EV: Orçamento rejeitado"]:::ev
+  E18_0 --> P18["POL: Registrar decisão; não baixar estoque; continuar aguardando"]:::pol
+  A19["AT: Equipe técnica"] --> C19["CMD: Propor reparo adicional"]:::cmd
+  R19["ML: Detalhe da OS em execução"]:::ml --> A19
+  C19 --> G4_WorkOrder
+  G4_WorkOrder --> E19_0["EV: Reparo adicional proposto"]:::ev
+  G4_WorkOrder --> E19_1["EV: Execução pausada"]:::ev
+  G4_WorkOrder --> E19_2["EV: Orçamento revisado"]:::ev
+  G4_WorkOrder --> E19_3["EV: Orçamento apresentado"]:::ev
+  E19_0 --> P19["POL: IN_PROGRESS; incrementar versão; pausar; nova aprovação"]:::pol
+  A20["AT: Cliente"] --> C20["CMD: Aprovar orçamento revisado"]:::cmd
+  R20["ML: Orçamento revisado público"]:::ml --> A20
+  C20 --> G4_WorkOrder
+  G4_WorkOrder --> E20_0["EV: Orçamento aprovado"]:::ev
+  G4_WorkOrder --> E20_1["EV: Execução retomada"]:::ev
+  E20_0 --> P20["POL: Baixar somente itens pendentes; preservar decisões anteriores"]:::pol
+  A21["AT: Equipe técnica"] --> C21["CMD: Finalizar reparo"]:::cmd
+  R21["ML: Fila de OS em execução"]:::ml --> A21
+  C21 --> G4_WorkOrder
+  G4_WorkOrder --> E21_0["EV: Reparo finalizado"]:::ev
+  E21_0 --> P21["POL: IN_PROGRESS → FINISHED"]:::pol
+  A22["AT: Atendente"] --> C22["CMD: Registrar entrega"]:::cmd
+  R22["ML: OS finalizadas"]:::ml --> A22
+  C22 --> G4_WorkOrder
+  G4_WorkOrder --> E22_0["EV: Veículo entregue"]:::ev
+  E22_0 --> P22["POL: FINISHED → DELIVERED"]:::pol
+  end
+  C17 -. consumo sincrono / UnitOfWork .-> C23

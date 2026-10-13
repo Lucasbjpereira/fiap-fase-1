@@ -16,3 +16,19 @@ Execuções registradas em 2026-09-28 e 2026-09-29, após a reconstrução da ar
 | Coleção Insomnia | JSON válido; 43 requisições abrangem as 35 operações atualmente publicadas no OpenAPI, incluindo as duas rotas de oficina. |
 
 Os testes de integração só são executados com `RUN_INTEGRATION=true`; sem essa variável, Bun os marca como ignorados e executa os testes unitários. `test:memory` executa isoladamente em `tests/` sem ler a configuração de cobertura do projeto.
+
+
+## Revisão de DDD e Event Storming — 02/10/2026
+
+- Oito etapas em SVG/Mermaid/Markdown e visualizador offline em `docs/ddd/event-storming/index.html`; rota local `/event-storming/`.
+- Persistência completa do agregado WorkOrder; handlers separados para diagnóstico, apresentação, aprovação, rejeição, adicional, finalização e entrega.
+- VOs Quote/QuoteVersion/StockBalance e igualdade/congelamento dos VOs existentes; saldo alterado por comportamento de Part.
+- Eventos de OS e estoque registrados no mesmo UnitOfWork da mudança, tanto PostgreSQL quanto in-memory.
+- `bun run typecheck`: concluído sem erros.
+- `bun run test:memory`: 2 testes passaram. Verificação de rollback dos eventos e estoque; rejeição; versão antiga; retomada sem consumo duplicado.
+- `RUN_INTEGRATION=true DATABASE_URL=postgres://oficina:oficina_local@localhost:5432/oficina bun run test:coverage`: 18 testes passaram, nenhum erro; 99,86% de linhas e 100% de funções nos arquivos incluídos no relatório. Infraestrutura e apresentação são excluídas da medição, mas os quatro testes de API exercitam os adaptadores PostgreSQL.
+- Na primeira execução integrada foi detectado erro de serialização de Date no DAO. A conversão para ISO resolveu o erro; a suíte integrada foi executada novamente com sucesso.
+- Docker Compose reconstruído; migração 0003 e seed aplicados; `/health` e `/event-storming/` retornaram HTTP 200.
+- Revisão visual no navegador: navegação entre etapas 4 e 7, renderização de post-its/legenda, entidades/VOs, escala legível e ajuste de largura.
+- A coleção Insomnia foi atualizada com `quote_version`; não foi importada manualmente no aplicativo nesta revisão.
+- Não houve nova análise de vulnerabilidades nesta revisão. Não há publicação de link externo, broker, Event Sourcing, notificações ou suporte multiunidade.

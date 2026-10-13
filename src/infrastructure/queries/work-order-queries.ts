@@ -10,15 +10,15 @@ export class PgWorkOrderQueries extends PostgresDao implements WorkOrderQueries 
     if (!order) return undefined;
     const items = await this.rows('SELECT * FROM order_items WHERE work_order_id = $1 ORDER BY id', [id]);
     const history = await this.history(id);
-    const decisions = await this.rows('SELECT approved, reason, quote_total_cents, created_at FROM quote_decisions WHERE work_order_id = $1 ORDER BY id', [id]);
+    const decisions = await this.rows('SELECT approved, reason, quote_total_cents, quote_version, created_at FROM quote_decisions WHERE work_order_id = $1 ORDER BY id', [id]);
     return { ...order, items, history, decisions };
   }
   async publicView(code: string) {
-    const order = await this.first<Record<string, unknown>>('SELECT w.id, w.tracking_code, w.status, w.complaint, w.quote_total_cents, w.opened_at, w.updated_at, v.brand, v.model, v.plate FROM work_orders w JOIN vehicles v ON v.id = w.vehicle_id WHERE w.tracking_code = $1', [code]);
+    const order = await this.first<Record<string, unknown>>('SELECT w.id, w.tracking_code, w.status, w.complaint, w.quote_total_cents, w.quote_version, w.opened_at, w.updated_at, v.brand, v.model, v.plate FROM work_orders w JOIN vehicles v ON v.id = w.vehicle_id WHERE w.tracking_code = $1', [code]);
     if (!order) return undefined;
     const items = await this.rows('SELECT kind, description, quantity, unit_price_cents FROM order_items WHERE work_order_id = $1 ORDER BY id', [Number(order.id)]);
     return { trackingCode: order.tracking_code, status: order.status, complaint: order.complaint,
-      vehicle: { brand: order.brand, model: order.model, plate: order.plate }, quoteTotalCents: order.quote_total_cents,
+      vehicle: { brand: order.brand, model: order.model, plate: order.plate }, quoteTotalCents: order.quote_total_cents, quoteVersion: order.quote_version,
       items, openedAt: order.opened_at, updatedAt: order.updated_at };
   }
   history(id: number) { return this.rows<Record<string, unknown>>('SELECT from_status, to_status, note, created_at FROM status_history WHERE work_order_id = $1 ORDER BY id', [id]); }

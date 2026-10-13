@@ -29,3 +29,15 @@ Prepare o Compose antes de gravar, use os dados fictícios do seed e deixe a col
 8. `Metrics / Average execution time`.
 
 Use uma OS recém-criada a cada ensaio para evitar inconsistência de estado ou saldo entre gravações. O áudio deve identificar todos os integrantes e explicar Event Storming, regras e escolhas, além de navegar pela tela.
+
+
+## Trecho DDD: demonstração em etapas
+
+1. Abrir `/event-storming/`; mostrar que a descoberta contém fatos de cadastro e eventos registrados, com distinção explícita.
+2. Etapa 2: narrar recebimento → diagnóstico → orçamento → aprovação → execução → finalização → entrega e o ciclo adicional.
+3. Etapas 3 e 4: explicar disponibilidade sem reserva, decisões por versão e os três pivotais.
+4. Etapas 5 e 6: apontar cliente + orçamento público → aprovar; separar leitura de comando e política síncrona.
+5. Etapas 7 e 8: mostrar raiz WorkOrder, filhos/VOs, repositório do agregado e coordenação com Part no monólito.
+6. No código: WorkOrder.approveQuote, ApproveQuote, WorkOrderRepository.save e PgUnitOfWork. Não afirmar que há broker, microserviços ou notificações.
+
+Esse trecho substitui a exposição do diagrama antigo; distribua aproximadamente 3 minutos dentro do limite total de 15 minutos.

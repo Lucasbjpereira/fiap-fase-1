@@ -1,0 +1,1 @@
+O usuário administrativo também possui identidade e repositório. Autenticar credenciais gera um token técnico; isso não é um evento do processo de reparo.

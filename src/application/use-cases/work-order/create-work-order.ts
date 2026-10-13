@@ -5,9 +5,11 @@ import { resolveOrderItem, type OrderItemRequest } from '../../resolve-order-ite
 import { ApplicationError } from '../../errors';
 import { requireFound } from '../../require-found';
 
+export interface CreateWorkOrderCommand { customerId?: number; customerDocument?: string; vehicleId: number; complaint: string; items: OrderItemRequest[] }
+
 export class CreateWorkOrder {
   constructor(private readonly unitOfWork: UnitOfWork) {}
-  execute(input: { customerId?: number; customerDocument?: string; vehicleId: number; complaint: string; items: OrderItemRequest[] }) {
+  execute(input: CreateWorkOrderCommand) {
     if (!input.items.length) throw new ApplicationError('validation', 'A OS deve conter ao menos um serviço ou peça');
     return this.unitOfWork.run(async context => {
       const byDocument = input.customerDocument ? await context.customers.findByDocument(new TaxDocument(input.customerDocument).value) : undefined;
@@ -26,10 +28,10 @@ export class CreateWorkOrder {
       for (const [partId, quantity] of requestedParts) {
         (await context.parts.findById(partId))!.ensureAvailable(quantity);
       }
-      const order = await context.workOrders.insert(WorkOrder.create(customerId, input.vehicleId, input.complaint, items));
-      for (const item of items) await context.workOrders.addItem(order.id!, item);
-      await context.workOrders.recordStatus(order.id!, order.history[0]);
-      return { id: order.id, trackingCode: order.trackingCode.value, quote_total_cents: order.quote.cents, status: order.status };
+      const aggregate = WorkOrder.create(customerId, input.vehicleId, input.complaint, items);
+      const order = await context.workOrders.save(aggregate);
+      await context.events.append(aggregate.pendingEvents);
+      return { id: order.id, trackingCode: order.trackingCode.value, quote_total_cents: order.quote.cents, status: order.status, quoteVersion: order.quoteVersion.value };
     });
   }
 }

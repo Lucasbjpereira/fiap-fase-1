@@ -19,7 +19,7 @@ Pré-requisitos: Docker Desktop com Compose v2. Na raiz:
 docker compose up --build
 ```
 
-O Compose aguarda o healthcheck do banco. A API executa a migração e o seed ao iniciar. Endereços: API `http://localhost:3000`, saúde `http://localhost:3000/health`, OpenAPI/Scalar `http://localhost:3000/openapi` e especificação JSON `http://localhost:3000/openapi/json`. A porta do PostgreSQL publicada no host é 5432 para evitar conflito local; entre containers, a API usa 5432.
+O Compose aguarda o healthcheck do banco. A API executa a migração e o seed ao iniciar. Endereços: API `http://localhost:3000`, saúde `http://localhost:3000/health`, OpenAPI/Scalar `http://localhost:3000/openapi` e especificação JSON `http://localhost:3000/openapi/json`. A porta do PostgreSQL publicada no host é 5432; entre containers, a API usa 5432.
 
 Credenciais fictícias locais: `admin@oficina.local` / `TroqueEstaSenha123!`. Troque-as antes de publicar ou compartilhar o ambiente. Para encerrar: `docker compose down`; para apagar também o banco local: `docker compose down -v`.
 
@@ -42,7 +42,7 @@ O seed cria a cliente Marina Souza (CPF fictício válido para teste), Honda Civ
 
 ## API e coleção Insomnia
 
-Importe `docs/insomnia/oficina-insomnia.json` no Insomnia. O ambiente base `Local` usa `http://localhost:3000`; a coleção inclui requisições para os métodos documentados, exemplos e cenários de erro. Após o login, copie o JWT para `jwt`; após criar uma OS, copie `id` para `work_order_id` e `trackingCode` para `tracking_code`. A documentação interativa em `/openapi` é a referência dos schemas publicados.
+Importe `docs/insomnia/oficina-insomnia.json` no Insomnia. O ambiente base `Local` usa `http://localhost:3000`; a coleção inclui requisições para os métodos documentados, exemplos e cenários de erro. Após o login, copie o JWT para `jwt`; após criar uma OS, copie `id` para `work_order_id`, `trackingCode` para `tracking_code` e `quoteVersion` para `quote_version`. Atualize `quote_version` após propor um reparo adicional. A documentação interativa em `/openapi` é uma página para abrir no navegador; `/openapi/json` é a especificação para clientes HTTP. Login usa **POST**, não GET.
 
 ## Testes e segurança
 
@@ -89,6 +89,14 @@ docs/security/                    relatório de análise de dependências
 docs/evidencias/                  resultados observados de execução
 .agents/skills/                   instruções reutilizáveis do projeto
 ```
+
+## Event Storming em oito etapas
+
+Abra **http://localhost:3000/event-storming/** com a API em execução ou abra `docs/ddd/event-storming/index.html` diretamente no navegador, sem rede. O material separa descoberta, timeline, pontos de atenção, eventos pivotais, comandos/atores, leituras/políticas, agregados/entidades/VOs e bounded contexts. Inclui SVGs independentes, Mermaid e explicações de cada etapa.
+
+A OS usa comportamentos explícitos, handlers por intenção e persistência do agregado completo. Aprovação e movimentos de estoque registram eventos em `domain_events` junto com a transação. Não há broker ou Event Sourcing. Orçamento e decisões possuem versão; envie `quoteVersion` retornado no acompanhamento público ao aprovar/rejeitar. O campo permanece opcional por compatibilidade, e quando enviado rejeita uma versão obsoleta.
+
+Para regenerar os quadros: `python3 scripts/generate-event-storming.py`. Detalhes: [modelo tático](docs/ddd/modelo-tatico.md), [decisões](docs/ddd/decisoes.md) e [rastreabilidade](docs/ddd/rastreabilidade.md).
 
 ## DDD e entrega acadêmica
 

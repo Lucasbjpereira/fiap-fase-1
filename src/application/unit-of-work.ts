@@ -5,6 +5,7 @@ import type { PartRepository } from '../domain/part/part-repository';
 import type { WorkOrderRepository } from '../domain/work-order/work-order-repository';
 import type { WorkshopRepository } from '../domain/workshop/workshop-repository';
 import type { AdminUserRepository } from '../domain/identity/admin-user-repository';
+import type { DomainEventStore } from './domain-event-store';
 
 export interface RepositoryContext {
   customers: CustomerRepository;
@@ -14,6 +15,7 @@ export interface RepositoryContext {
   workOrders: WorkOrderRepository;
   workshops: WorkshopRepository;
   users: AdminUserRepository;
+  events: DomainEventStore;
 }
 export interface UnitOfWork {
   run<T>(operation: (context: RepositoryContext) => Promise<T>): Promise<T>;

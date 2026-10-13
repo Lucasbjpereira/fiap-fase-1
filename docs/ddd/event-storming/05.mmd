@@ -1,0 +1,62 @@
+flowchart LR
+  classDef ev fill:#ffca28,stroke:#172033;
+  classDef cmd fill:#00c5cf,stroke:#172033;
+  classDef ag fill:#fff2a1,stroke:#172033;
+  classDef ml fill:#76d66c,stroke:#172033;
+  classDef pol fill:#e58be8,stroke:#172033;
+  classDef pa fill:#ff6c88,stroke:#172033;
+  A0["AT: Administrador"] --> C0["CMD: Cadastrar oficina"]:::cmd
+  C0 --> E0_0["EV: Oficina cadastrada"]:::ev
+  A1["AT: Atendente"] --> C1["CMD: Cadastrar cliente"]:::cmd
+  C1 --> E1_0["EV: Cliente cadastrado"]:::ev
+  A2["AT: Atendente"] --> C2["CMD: Alterar contato"]:::cmd
+  C2 --> E2_0["EV: Contato do cliente alterado"]:::ev
+  A3["AT: Atendente"] --> C3["CMD: Vincular veículo"]:::cmd
+  C3 --> E3_0["EV: Veículo vinculado ao cliente"]:::ev
+  A4["AT: Atendente"] --> C4["CMD: Alterar dados do veículo"]:::cmd
+  C4 --> E4_0["EV: Dados do veículo alterados"]:::ev
+  A5["AT: Administrador"] --> C5["CMD: Cadastrar serviço"]:::cmd
+  C5 --> E5_0["EV: Serviço cadastrado"]:::ev
+  A6["AT: Administrador"] --> C6["CMD: Alterar preço do serviço"]:::cmd
+  C6 --> E6_0["EV: Preço do serviço alterado"]:::ev
+  A7["AT: Administrador"] --> C7["CMD: Desativar serviço"]:::cmd
+  C7 --> E7_0["EV: Serviço desativado"]:::ev
+  A8["AT: Estoquista"] --> C8["CMD: Cadastrar peça"]:::cmd
+  C8 --> E8_0["EV: Peça cadastrada com saldo inicial"]:::ev
+  A9["AT: Administrador"] --> C9["CMD: Alterar preço da peça"]:::cmd
+  C9 --> E9_0["EV: Preço da peça alterado"]:::ev
+  A10["AT: Estoquista"] --> C10["CMD: Definir estoque mínimo"]:::cmd
+  C10 --> E10_0["EV: Estoque mínimo alterado"]:::ev
+  A11["AT: Estoquista"] --> C11["CMD: Receber estoque"]:::cmd
+  C11 --> E11_0["EV: Entrada de estoque registrada"]:::ev
+  A12["AT: Estoquista"] --> C12["CMD: Retirar estoque"]:::cmd
+  C12 --> E12_0["EV: Saída manual registrada"]:::ev
+  A13["AT: Administrador"] --> C13["CMD: Desativar peça"]:::cmd
+  C13 --> E13_0["EV: Peça desativada"]:::ev
+  A14["AT: Atendente"] --> C14["CMD: Receber OS"]:::cmd
+  C14 --> E14_0["EV: OS recebida"]:::ev
+  C14 --> E14_1["EV: Orçamento calculado"]:::ev
+  A15["AT: Equipe técnica"] --> C15["CMD: Iniciar diagnóstico"]:::cmd
+  C15 --> E15_0["EV: Diagnóstico iniciado"]:::ev
+  A16["AT: Equipe técnica"] --> C16["CMD: Apresentar orçamento"]:::cmd
+  C16 --> E16_0["EV: Orçamento apresentado"]:::ev
+  A17["AT: Cliente"] --> C17["CMD: Aprovar orçamento"]:::cmd
+  C17 --> E17_0["EV: Orçamento aprovado"]:::ev
+  C17 --> E17_1["EV: Execução iniciada"]:::ev
+  A18["AT: Cliente"] --> C18["CMD: Rejeitar orçamento"]:::cmd
+  C18 --> E18_0["EV: Orçamento rejeitado"]:::ev
+  A19["AT: Equipe técnica"] --> C19["CMD: Propor reparo adicional"]:::cmd
+  C19 --> E19_0["EV: Reparo adicional proposto"]:::ev
+  C19 --> E19_1["EV: Execução pausada"]:::ev
+  C19 --> E19_2["EV: Orçamento revisado"]:::ev
+  C19 --> E19_3["EV: Orçamento apresentado"]:::ev
+  A20["AT: Cliente"] --> C20["CMD: Aprovar orçamento revisado"]:::cmd
+  C20 --> E20_0["EV: Orçamento aprovado"]:::ev
+  C20 --> E20_1["EV: Execução retomada"]:::ev
+  A21["AT: Equipe técnica"] --> C21["CMD: Finalizar reparo"]:::cmd
+  C21 --> E21_0["EV: Reparo finalizado"]:::ev
+  A22["AT: Atendente"] --> C22["CMD: Registrar entrega"]:::cmd
+  C22 --> E22_0["EV: Veículo entregue"]:::ev
+  A23["AT: Política de aprovação"] --> C23["CMD: Consumir peças aprovadas"]:::cmd
+  C23 --> E23_0["EV: Peças consumidas na OS"]:::ev
+  C23 --> E23_1["EV: Estoque mínimo atingido"]:::ev

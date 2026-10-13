@@ -1,3 +1,4 @@
+import type { DomainEvent } from '../../domain/shared/domain-event';
 import type { Customer } from '../../domain/customer/customer';
 import type { Vehicle } from '../../domain/vehicle/vehicle';
 import type { Service } from '../../domain/service/service';
@@ -26,13 +27,14 @@ export interface MemoryState {
   users: Map<number, AdminUser>;
   workOrders: Map<number, StoredWorkOrder>;
   movements: InventoryMovement[];
+  events: DomainEvent[];
   nextIds: { customer: number; vehicle: number; service: number; part: number; workshop: number; workOrder: number; workOrderItem: number; movement: number };
 }
 
 function emptyState(): MemoryState {
   return {
     customers: new Map(), vehicles: new Map(), services: new Map(), parts: new Map(),
-    workshops: new Map(), users: new Map(), workOrders: new Map(), movements: [],
+    workshops: new Map(), users: new Map(), workOrders: new Map(), movements: [], events: [],
     nextIds: { customer: 1, vehicle: 1, service: 1, part: 1, workshop: 1, workOrder: 1, workOrderItem: 1, movement: 1 }
   };
 }
@@ -41,7 +43,7 @@ export function copyState(state: MemoryState): MemoryState {
   return {
     customers: new Map(state.customers), vehicles: new Map(state.vehicles), services: new Map(state.services),
     parts: new Map(state.parts), workshops: new Map(state.workshops), users: new Map(state.users),
-    workOrders: new Map(state.workOrders), movements: [...state.movements], nextIds: { ...state.nextIds }
+    workOrders: new Map(state.workOrders), movements: [...state.movements], events: [...state.events], nextIds: { ...state.nextIds }
   };
 }
 

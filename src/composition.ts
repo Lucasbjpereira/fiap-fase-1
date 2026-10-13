@@ -26,7 +26,7 @@ import { ListPartMovements } from './application/use-cases/part/list-part-moveme
 import { CreateWorkshop } from './application/use-cases/workshop/create-workshop';
 import { GetWorkshop } from './application/use-cases/workshop/get-workshop';
 import { CreateWorkOrder } from './application/use-cases/work-order/create-work-order';
-import { AddWorkOrderItem } from './application/use-cases/work-order/add-work-order-item';
+import { ProposeAdditionalRepair } from './application/use-cases/work-order/propose-additional-repair';
 import { DecideQuote } from './application/use-cases/work-order/decide-quote';
 import { ChangeWorkOrderStatus } from './application/use-cases/work-order/change-work-order-status';
 import { GetWorkOrder } from './application/use-cases/work-order/get-work-order';
@@ -45,6 +45,6 @@ export const useCases = {
   services: { create: new CreateService(context.services), get: new GetService(context.services), list: new ListServices(context.services), update: new UpdateService(context.services), deactivate: new DeactivateService(context.services) },
   parts: { create: new CreatePart(context.parts), get: new GetPart(context.parts), list: new ListParts(context.parts), update: new UpdatePart(context.parts), deactivate: new DeactivatePart(context.parts), adjustStock: new AdjustStock(unitOfWork), movements: new ListPartMovements(context.parts) },
   workshops: { create: new CreateWorkshop(context.workshops), get: new GetWorkshop(context.workshops) },
-  workOrders: { create: new CreateWorkOrder(unitOfWork), addItem: new AddWorkOrderItem(unitOfWork), decide: new DecideQuote(unitOfWork), changeStatus: new ChangeWorkOrderStatus(unitOfWork), get: new GetWorkOrder(workOrderQueries), list: new ListWorkOrders(workOrderQueries), track: new TrackWorkOrder(workOrderQueries), history: new GetWorkOrderHistory(context.workOrders, workOrderQueries), average: new GetAverageExecutionTime(workOrderQueries) },
+  workOrders: { create: new CreateWorkOrder(unitOfWork), addItem: new ProposeAdditionalRepair(unitOfWork), decide: new DecideQuote(unitOfWork), changeStatus: new ChangeWorkOrderStatus(unitOfWork), get: new GetWorkOrder(workOrderQueries), list: new ListWorkOrders(workOrderQueries), track: new TrackWorkOrder(workOrderQueries), history: new GetWorkOrderHistory(context.workOrders, workOrderQueries), average: new GetAverageExecutionTime(workOrderQueries) },
   authenticate: new AuthenticateAdmin(context.users)
 };

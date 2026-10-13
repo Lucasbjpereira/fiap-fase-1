@@ -1,0 +1,491 @@
+{
+  "events": [
+    {
+      "id": "C01",
+      "name": "WorkshopRegistered",
+      "label": "Oficina cadastrada",
+      "aggregate": "Workshop",
+      "persistence": "cadastro"
+    },
+    {
+      "id": "C02",
+      "name": "CustomerRegistered",
+      "label": "Cliente cadastrado",
+      "aggregate": "Customer",
+      "persistence": "cadastro"
+    },
+    {
+      "id": "C03",
+      "name": "CustomerContactChanged",
+      "label": "Contato do cliente alterado",
+      "aggregate": "Customer",
+      "persistence": "cadastro"
+    },
+    {
+      "id": "C04",
+      "name": "VehicleRegistered",
+      "label": "Veículo vinculado ao cliente",
+      "aggregate": "Vehicle",
+      "persistence": "cadastro"
+    },
+    {
+      "id": "C05",
+      "name": "VehicleDetailsChanged",
+      "label": "Dados do veículo alterados",
+      "aggregate": "Vehicle",
+      "persistence": "cadastro"
+    },
+    {
+      "id": "C06",
+      "name": "ServiceRegistered",
+      "label": "Serviço cadastrado",
+      "aggregate": "Service",
+      "persistence": "cadastro"
+    },
+    {
+      "id": "C07",
+      "name": "ServicePriceChanged",
+      "label": "Preço do serviço alterado",
+      "aggregate": "Service",
+      "persistence": "cadastro"
+    },
+    {
+      "id": "C08",
+      "name": "ServiceDeactivated",
+      "label": "Serviço desativado",
+      "aggregate": "Service",
+      "persistence": "cadastro"
+    },
+    {
+      "id": "C09",
+      "name": "PartRegistered",
+      "label": "Peça cadastrada com saldo inicial",
+      "aggregate": "Part",
+      "persistence": "cadastro"
+    },
+    {
+      "id": "C10",
+      "name": "PartPriceChanged",
+      "label": "Preço da peça alterado",
+      "aggregate": "Part",
+      "persistence": "cadastro"
+    },
+    {
+      "id": "C11",
+      "name": "MinimumStockChanged",
+      "label": "Estoque mínimo alterado",
+      "aggregate": "Part",
+      "persistence": "cadastro"
+    },
+    {
+      "id": "C12",
+      "name": "PartDeactivated",
+      "label": "Peça desativada",
+      "aggregate": "Part",
+      "persistence": "cadastro"
+    },
+    {
+      "id": "E01",
+      "name": "WorkOrderReceived",
+      "label": "OS recebida",
+      "aggregate": "WorkOrder",
+      "persistence": "evento"
+    },
+    {
+      "id": "E02",
+      "name": "QuoteCalculated",
+      "label": "Orçamento calculado",
+      "aggregate": "WorkOrder",
+      "persistence": "evento"
+    },
+    {
+      "id": "E03",
+      "name": "DiagnosisStarted",
+      "label": "Diagnóstico iniciado",
+      "aggregate": "WorkOrder",
+      "persistence": "evento"
+    },
+    {
+      "id": "E04",
+      "name": "QuoteSubmitted",
+      "label": "Orçamento apresentado",
+      "aggregate": "WorkOrder",
+      "persistence": "evento"
+    },
+    {
+      "id": "E05",
+      "name": "QuoteApproved",
+      "label": "Orçamento aprovado",
+      "aggregate": "WorkOrder",
+      "persistence": "evento"
+    },
+    {
+      "id": "E06",
+      "name": "QuoteRejected",
+      "label": "Orçamento rejeitado",
+      "aggregate": "WorkOrder",
+      "persistence": "evento"
+    },
+    {
+      "id": "E07",
+      "name": "ExecutionStarted",
+      "label": "Execução iniciada",
+      "aggregate": "WorkOrder",
+      "persistence": "evento"
+    },
+    {
+      "id": "E08",
+      "name": "AdditionalRepairProposed",
+      "label": "Reparo adicional proposto",
+      "aggregate": "WorkOrder",
+      "persistence": "evento"
+    },
+    {
+      "id": "E09",
+      "name": "ExecutionPaused",
+      "label": "Execução pausada",
+      "aggregate": "WorkOrder",
+      "persistence": "evento"
+    },
+    {
+      "id": "E10",
+      "name": "QuoteRevised",
+      "label": "Orçamento revisado",
+      "aggregate": "WorkOrder",
+      "persistence": "evento"
+    },
+    {
+      "id": "E11",
+      "name": "ExecutionResumed",
+      "label": "Execução retomada",
+      "aggregate": "WorkOrder",
+      "persistence": "evento"
+    },
+    {
+      "id": "E12",
+      "name": "RepairFinished",
+      "label": "Reparo finalizado",
+      "aggregate": "WorkOrder",
+      "persistence": "evento"
+    },
+    {
+      "id": "E13",
+      "name": "VehicleDelivered",
+      "label": "Veículo entregue",
+      "aggregate": "WorkOrder",
+      "persistence": "evento"
+    },
+    {
+      "id": "E14",
+      "name": "StockReceived",
+      "label": "Entrada de estoque registrada",
+      "aggregate": "Part",
+      "persistence": "evento"
+    },
+    {
+      "id": "E15",
+      "name": "StockWithdrawn",
+      "label": "Saída manual registrada",
+      "aggregate": "Part",
+      "persistence": "evento"
+    },
+    {
+      "id": "E16",
+      "name": "PartsConsumed",
+      "label": "Peças consumidas na OS",
+      "aggregate": "Part",
+      "persistence": "evento"
+    },
+    {
+      "id": "E17",
+      "name": "MinimumStockReached",
+      "label": "Estoque mínimo atingido",
+      "aggregate": "Part",
+      "persistence": "evento"
+    }
+  ],
+  "commands": [
+    {
+      "context": "Operação da oficina",
+      "actor": "Administrador",
+      "readModel": "Dados da oficina",
+      "command": "Cadastrar oficina",
+      "aggregate": "Workshop",
+      "eventIds": "C01",
+      "policy": "Nome/endereço válidos; documento válido",
+      "handler": "CreateWorkshop"
+    },
+    {
+      "context": "Relacionamento com clientes",
+      "actor": "Atendente",
+      "readModel": "Cadastro de clientes",
+      "command": "Cadastrar cliente",
+      "aggregate": "Customer",
+      "eventIds": "C02",
+      "policy": "CPF/CNPJ válido e único",
+      "handler": "CreateCustomer"
+    },
+    {
+      "context": "Relacionamento com clientes",
+      "actor": "Atendente",
+      "readModel": "Cadastro de clientes",
+      "command": "Alterar contato",
+      "aggregate": "Customer",
+      "eventIds": "C03",
+      "policy": "Preservar identidade do cliente",
+      "handler": "UpdateCustomer"
+    },
+    {
+      "context": "Relacionamento com clientes",
+      "actor": "Atendente",
+      "readModel": "Veículos do cliente",
+      "command": "Vincular veículo",
+      "aggregate": "Vehicle",
+      "eventIds": "C04",
+      "policy": "Cliente existente; placa válida e única",
+      "handler": "CreateVehicle"
+    },
+    {
+      "context": "Relacionamento com clientes",
+      "actor": "Atendente",
+      "readModel": "Veículos do cliente",
+      "command": "Alterar dados do veículo",
+      "aggregate": "Vehicle",
+      "eventIds": "C05",
+      "policy": "Ano válido; preservar dono e placa",
+      "handler": "UpdateVehicle"
+    },
+    {
+      "context": "Catálogo de serviços",
+      "actor": "Administrador",
+      "readModel": "Catálogo de serviços",
+      "command": "Cadastrar serviço",
+      "aggregate": "Service",
+      "eventIds": "C06",
+      "policy": "Preço ≥ 0; duração > 0",
+      "handler": "CreateService"
+    },
+    {
+      "context": "Catálogo de serviços",
+      "actor": "Administrador",
+      "readModel": "Catálogo de serviços",
+      "command": "Alterar preço do serviço",
+      "aggregate": "Service",
+      "eventIds": "C07",
+      "policy": "Money em centavos; OS mantém snapshot",
+      "handler": "UpdateService"
+    },
+    {
+      "context": "Catálogo de serviços",
+      "actor": "Administrador",
+      "readModel": "Catálogo de serviços",
+      "command": "Desativar serviço",
+      "aggregate": "Service",
+      "eventIds": "C08",
+      "policy": "Bloquear novas inclusões; manter histórico",
+      "handler": "DeactivateService"
+    },
+    {
+      "context": "Peças e estoque",
+      "actor": "Estoquista",
+      "readModel": "Catálogo e saldo",
+      "command": "Cadastrar peça",
+      "aggregate": "Part",
+      "eventIds": "C09",
+      "policy": "SKU único; saldo inicial ≥ 0",
+      "handler": "CreatePart"
+    },
+    {
+      "context": "Peças e estoque",
+      "actor": "Administrador",
+      "readModel": "Catálogo e saldo",
+      "command": "Alterar preço da peça",
+      "aggregate": "Part",
+      "eventIds": "C10",
+      "policy": "Money; não alterar preço da OS existente",
+      "handler": "UpdatePart"
+    },
+    {
+      "context": "Peças e estoque",
+      "actor": "Estoquista",
+      "readModel": "Catálogo e saldo",
+      "command": "Definir estoque mínimo",
+      "aggregate": "Part",
+      "eventIds": "C11",
+      "policy": "Mínimo ≥ 0",
+      "handler": "UpdatePart"
+    },
+    {
+      "context": "Peças e estoque",
+      "actor": "Estoquista",
+      "readModel": "Saldo e movimentações",
+      "command": "Receber estoque",
+      "aggregate": "Part",
+      "eventIds": "E14",
+      "policy": "Quantidade > 0; motivo válido; registrar movimento",
+      "handler": "ReceiveStock"
+    },
+    {
+      "context": "Peças e estoque",
+      "actor": "Estoquista",
+      "readModel": "Saldo e movimentações",
+      "command": "Retirar estoque",
+      "aggregate": "Part",
+      "eventIds": "E15",
+      "policy": "Saldo não negativo; registrar movimento",
+      "handler": "WithdrawStock"
+    },
+    {
+      "context": "Peças e estoque",
+      "actor": "Administrador",
+      "readModel": "Catálogo e saldo",
+      "command": "Desativar peça",
+      "aggregate": "Part",
+      "eventIds": "C12",
+      "policy": "Bloquear novos usos e consumo",
+      "handler": "DeactivatePart"
+    },
+    {
+      "context": "Atendimento e reparo",
+      "actor": "Atendente",
+      "readModel": "Cliente, veículo e catálogo",
+      "command": "Receber OS",
+      "aggregate": "WorkOrder",
+      "eventIds": "E01,E02",
+      "policy": "Veículo do cliente; itens ativos; disponibilidade inicial",
+      "handler": "CreateWorkOrder"
+    },
+    {
+      "context": "Atendimento e reparo",
+      "actor": "Equipe técnica",
+      "readModel": "Fila de OS recebidas",
+      "command": "Iniciar diagnóstico",
+      "aggregate": "WorkOrder",
+      "eventIds": "E03",
+      "policy": "RECEIVED → DIAGNOSIS",
+      "handler": "StartDiagnosis"
+    },
+    {
+      "context": "Atendimento e reparo",
+      "actor": "Equipe técnica",
+      "readModel": "Detalhe da OS e orçamento",
+      "command": "Apresentar orçamento",
+      "aggregate": "WorkOrder",
+      "eventIds": "E04",
+      "policy": "DIAGNOSIS → AWAITING_APPROVAL",
+      "handler": "SubmitQuote"
+    },
+    {
+      "context": "Atendimento e reparo",
+      "actor": "Cliente",
+      "readModel": "Acompanhamento público",
+      "command": "Aprovar orçamento",
+      "aggregate": "WorkOrder",
+      "eventIds": "E05,E07",
+      "policy": "Versão atual; estoque validado na transação; só então executar",
+      "handler": "ApproveQuote"
+    },
+    {
+      "context": "Atendimento e reparo",
+      "actor": "Cliente",
+      "readModel": "Acompanhamento público",
+      "command": "Rejeitar orçamento",
+      "aggregate": "WorkOrder",
+      "eventIds": "E06",
+      "policy": "Registrar decisão; não baixar estoque; continuar aguardando",
+      "handler": "RejectQuote"
+    },
+    {
+      "context": "Atendimento e reparo",
+      "actor": "Equipe técnica",
+      "readModel": "Detalhe da OS em execução",
+      "command": "Propor reparo adicional",
+      "aggregate": "WorkOrder",
+      "eventIds": "E08,E09,E10,E04",
+      "policy": "IN_PROGRESS; incrementar versão; pausar; nova aprovação",
+      "handler": "ProposeAdditionalRepair"
+    },
+    {
+      "context": "Atendimento e reparo",
+      "actor": "Cliente",
+      "readModel": "Orçamento revisado público",
+      "command": "Aprovar orçamento revisado",
+      "aggregate": "WorkOrder",
+      "eventIds": "E05,E11",
+      "policy": "Baixar somente itens pendentes; preservar decisões anteriores",
+      "handler": "ApproveQuote"
+    },
+    {
+      "context": "Atendimento e reparo",
+      "actor": "Equipe técnica",
+      "readModel": "Fila de OS em execução",
+      "command": "Finalizar reparo",
+      "aggregate": "WorkOrder",
+      "eventIds": "E12",
+      "policy": "IN_PROGRESS → FINISHED",
+      "handler": "FinishRepair"
+    },
+    {
+      "context": "Atendimento e reparo",
+      "actor": "Atendente",
+      "readModel": "OS finalizadas",
+      "command": "Registrar entrega",
+      "aggregate": "WorkOrder",
+      "eventIds": "E13",
+      "policy": "FINISHED → DELIVERED",
+      "handler": "RecordDelivery"
+    },
+    {
+      "context": "Peças e estoque",
+      "actor": "Política de aprovação",
+      "readModel": "Itens pendentes da OS",
+      "command": "Consumir peças aprovadas",
+      "aggregate": "Part",
+      "eventIds": "E16,E17",
+      "policy": "Mesmo UnitOfWork; locks por ID; saldo não negativo",
+      "handler": "ApproveQuote / Part.consumeForWorkOrder"
+    }
+  ],
+  "hotspots": [
+    {
+      "id": "H01",
+      "question": "Reserva ou conferência?",
+      "decision": "Decidido: criação confere; não reserva. Aprovação confere novamente e consome atomicamente."
+    },
+    {
+      "id": "H02",
+      "question": "Rejeição cancela a OS?",
+      "decision": "Decidido: mantém AWAITING_APPROVAL, registra decisão e não consome estoque. Cancelamento não está no MVP."
+    },
+    {
+      "id": "H03",
+      "question": "Qual orçamento foi aprovado?",
+      "decision": "Decidido: decisões guardam versão e total. quoteVersion enviado pelo cliente rejeita versão antiga; campo ainda opcional por compatibilidade."
+    },
+    {
+      "id": "H04",
+      "question": "Reparo adicional pode executar?",
+      "decision": "Decidido: pausa e incrementa versão. Aprovação nova consome apenas peças ainda não consumidas."
+    },
+    {
+      "id": "H05",
+      "question": "Duas OS disputam a última peça?",
+      "decision": "Decidido: lock, versão otimista de Part e rollback conjunto de OS, saldo, movimentos e eventos."
+    },
+    {
+      "id": "H06",
+      "question": "Como o cliente é notificado?",
+      "decision": "Em aberto: não há email/SMS. O orçamento e o progresso são consultados pelo código público."
+    },
+    {
+      "id": "H07",
+      "question": "Como medir a execução?",
+      "decision": "Decidido: primeira aprovação até finalização, incluindo pausas. Não representa só horas de trabalho ativo."
+    },
+    {
+      "id": "H08",
+      "question": "A oficina possui várias unidades?",
+      "decision": "Em aberto: Workshop é cadastro único lógico; OS ainda não possui workshopId. Multiunidade não está implementada."
+    }
+  ]
+}

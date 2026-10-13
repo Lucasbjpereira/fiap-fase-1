@@ -1,108 +1,64 @@
-# DDD — Sistema da oficina
+# DDD e Event Storming — Oficina
 
-Esta modelagem inicial descreve o MVP implementado. O grupo deve validar o Event Storming com todos os integrantes e exportar o quadro colaborativo para PDF ou imagem nesta pasta. O link externo compartilhável deve ser preenchido em `docs/entrega/modelo.md`.
+A modelagem evolui em **oito etapas separadas**, acompanhadas pelo código. O objetivo é explicar o negócio, justificar os limites dos agregados e demonstrar como as intenções chegam aos comportamentos implementados.
+
+## Abrir os quadros
+
+- Com a API: **http://localhost:3000/event-storming/**.
+- Sem API/rede: abra `event-storming/index.html` no navegador. O visualizador contém os oito SVGs embutidos e não depende de CDN.
+- Cada etapa possui SVG independente, fonte Mermaid e explicação Markdown. Use zoom e barras de rolagem para explorar os quadros; a impressão usa a etapa selecionada.
+- Regerar após editar o catálogo de origem em `scripts/generate-event-storming.py`: `python3 scripts/generate-event-storming.py`. O script produz `catalogo.json`, SVGs, Mermaid e HTML de forma determinística no conteúdo do quadro.
+
+| Etapa | Objetivo | Material |
+|---|---|---|
+| 1 | Levantar fatos antes de organizar | [Descoberta livre](event-storming/01-descoberta.md) |
+| 2 | Organizar o caminho e as alternativas no tempo | [Linha do tempo](event-storming/02-linha-do-tempo.md) |
+| 3 | Identificar dúvidas, riscos e decisões | [Pontos de atenção](event-storming/03-pontos-de-atencao.md) |
+| 4 | Marcar mudanças de fase do processo | [Eventos pivotais](event-storming/04-eventos-pivotais.md) |
+| 5 | Identificar quem pede o quê | [Atores e comandos](event-storming/05-atores-e-comandos.md) |
+| 6 | Mostrar informações para decidir e políticas | [Leituras e políticas](event-storming/06-leituras-e-politicas.md) |
+| 7 | Definir consistência, raízes, entidades e VOs | [Agregados](event-storming/07-agregados.md) |
+| 8 | Delimitar linguagem, responsabilidade e integração | [Bounded contexts](event-storming/08-bounded-contexts.md) |
+
+Os três fluxos do desafio estão presentes: criação da OS; acompanhamento e decisão sobre orçamento; gerenciamento de peças e insumos. O quadro inclui 29 fatos: 17 tipos de eventos com envelope registrado e 12 fatos de cadastro cujo estado é persistido sem envelope próprio. Não tratamos consultas, falhas ou funcionalidades futuras como eventos de sucesso já implementados.
+
+## Notação e conceitos
+
+| Sigla/cor | Conceito | Significado |
+|---|---|---|
+| EV / amarelo | Evento de domínio | Algo ocorrido, nomeado no passado. E01–E17 são `DomainEvent`; C01–C12 são fatos de cadastro sem registro em `domain_events`. |
+| CMD / azul turquesa | Comando | Intenção que pode ser aceita ou rejeitada: aprovar orçamento, finalizar reparo. |
+| AT / amarelo claro | Ator | Papel que inicia uma ação: cliente, atendente, equipe técnica, estoquista. A API administrativa usa um único papel JWT no MVP. |
+| ML / verde | Modelo de leitura | Informação para decidir: orçamento público, fila de OS, saldo e movimentos. |
+| POL / lilás | Política | Regra/condição que orienta uma decisão ou reação. É síncrona neste monólito; não há consumidor automático de mensagens. |
+| PA / rosa | Ponto de atenção | Dúvida ou risco. O catálogo declara a decisão tomada ou o que permanece aberto. |
+| D / losango lilás | Decisão | Ramificação do processo, como aprovar ou rejeitar. |
+| AG / amarelo claro | Agregado | Unidade de consistência protegida pela raiz; não é uma camada ou uma tabela. |
+| ENT / azul claro | Entidade | Tem identidade e continuidade, como `WorkOrderItem` dentro da OS. |
+| VO / lavanda | Objeto de valor | Não tem identidade própria; é validado, imutável e comparado por conteúdo. |
+| ★ / borda espessa | Evento pivotal | Fato que muda a fase do processo. |
+
+**Fluxo de execução:** ator usa leitura → envia comando → handler carrega raiz → comportamento valida invariantes → repositório persiste agregado → eventos são registrados na mesma transação. A entidade interna não envia comandos HTTP para sua raiz; o comportamento da raiz controla seus filhos.
 
 ## Linguagem ubíqua
 
-| Termo | Significado neste projeto | Implementação |
+| Termo | Significado no projeto | Código |
 |---|---|---|
-| Ordem de Serviço (OS) | Registro do atendimento e execução de reparo de um veículo | `work_orders`, rotas `/work-orders` |
-| Orçamento | Soma dos serviços e peças cadastrados como itens da OS | `quote_total_cents`, `order_items` |
-| Código de acompanhamento | Segredo aleatório entregue ao cliente para consulta pública limitada | `work_orders.tracking_code` |
-| Peça/insumo | Item controlado em estoque e usado em uma OS | `parts`, `inventory_movements` |
-| Decisão do orçamento | Aprovação ou rejeição registrada pelo cliente | `quote_decisions` |
-| Histórico de status | Eventos de transição da OS em ordem cronológica | `status_history` |
+| OS | Atendimento/reparo de um veículo de um cliente | `WorkOrder` |
+| Orçamento | Total dos snapshots de preço e quantidade dos itens de uma versão | `Quote`, `Money`, `QuoteVersion` |
+| Decisão | Aceite/rejeição de uma versão e de seu total | `QuoteDecision` |
+| Reparo adicional | Novo item durante execução que pausa a OS e pede nova aprovação | `proposeAdditionalRepair` |
+| Peça/insumo | Item de catálogo com saldo controlado | `Part`, `StockBalance` |
+| Consumo | Saída vinculada a uma OS aprovada | `consumeForWorkOrder`, `InventoryMovement` |
+| Acompanhamento | Consulta pública limitada pelo código imprevisível | `TrackingCode`, `WorkOrderQueries.publicView` |
+| Tempo de execução | Primeira aprovação até finalização, incluindo pausas | `averageExecutionMinutes` |
 
-## Event Storming: criação da OS
+Veja [modelo tático](modelo-tatico.md), [decisões](decisoes.md) e [rastreabilidade](rastreabilidade.md) para os detalhes e caminhos de código.
 
-```mermaid
-flowchart LR
-  A[Atendente] --> C1[Registrar atendimento]
-  C1 --> E1((OS recebida))
-  E1 --> P1[Validar cliente e veículo]
-  P1 --> C2[Registrar diagnóstico]
-  C2 --> E2((OS em diagnóstico))
-  E2 --> C3[Adicionar serviços e peças]
-  C3 --> P2[Calcular orçamento e verificar estoque]
-  P2 --> E3((Orçamento disponibilizado))
-  E3 --> E4((Aguardando aprovação))
-```
+## Fontes conceituais
 
-## Event Storming: acompanhamento e decisão
+A nomenclatura segue [EventStorming](https://www.eventstorming.com/), a explicação de [eventos pivotais por Alberto Brandolini](https://www.avanscoperta.it/en/eventstorming/pivotal-events/) e as definições de [agregado](https://martinfowler.com/bliki/DDD_Aggregate.html), [objeto de valor](https://martinfowler.com/bliki/ValueObject.html) e [bounded context](https://martinfowler.com/bliki/BoundedContext.html). As decisões da oficina são decisões deste projeto.
 
-```mermaid
-flowchart LR
-  A[Cliente] --> C1[Consultar pelo código]
-  C1 --> E1((Progresso consultado))
-  A --> C2[Aprovar ou rejeitar orçamento]
-  C2 --> P1{Decisão}
-  P1 -->|Aprovar| E2((Orçamento aprovado))
-  E2 --> P2[Baixar estoque em transação]
-  P2 --> E3((OS em execução))
-  P1 -->|Rejeitar| E4((Orçamento rejeitado e registrado))
-  T[Equipe técnica] --> C3[Finalizar serviço]
-  C3 --> E5((OS finalizada))
-  E5 --> C4[Registrar entrega]
-  C4 --> E6((OS entregue))
-```
+## Entrega externa
 
-## Event Storming: peças e insumos
-
-```mermaid
-flowchart LR
-  A[Administrador] --> C1[Registrar entrada/ajuste]
-  C1 --> P1[Validar saldo não negativo]
-  P1 --> E1((Movimentação registrada))
-  E1 --> E2((Saldo atualizado))
-  O[Orçamento aprovado] --> C2[Consumir peças da OS]
-  C2 --> P2[Conferir disponibilidade em transação]
-  P2 --> E3((Saída vinculada à OS))
-  P2 -->|Sem saldo| E4((Aprovação não concluída))
-```
-
-## Modelo de domínio
-
-- **Atores:** cliente, atendente/administrador e equipe técnica.
-- **Agregado principal:** Ordem de Serviço, com itens, orçamento, decisões e histórico encapsulados pela entidade `WorkOrder`.
-- **Agregado de estoque:** Peça, com saldo e movimentações. A saída é atômica no banco para evitar saldo negativo.
-- **Entidades implementadas:** Cliente, Veículo, Serviço, Peça, Oficina, Usuário administrativo, Ordem de Serviço, Item de OS, Decisão de orçamento, Mudança de status e Movimentação de estoque.
-- **Objetos de valor implementados:** CPF/CNPJ (`TaxDocument`), Placa (`VehiclePlate`), Dinheiro em centavos (`Money`), Quantidade (`Quantity`) e Código de acompanhamento (`TrackingCode`).
-- **Bounded contexts:** Atendimento e OS; Catálogo e Estoque; Identidade administrativa. São módulos lógicos dentro do monólito.
-- **Políticas:** só veículo do cliente pode entrar na OS; orçamento é calculado pelos preços atuais no momento da criação; estoque é debitado na aprovação; reparos adicionais atualizam o orçamento e exigem nova aprovação, debitando somente itens ainda não consumidos; saldo não pode ficar negativo; transições inválidas são recusadas.
-
-## Relação com o código
-
-| Agregado ou módulo | Entidade raiz | Dados internos | Contrato de persistência | Adaptador |
-|---|---|---|---|---|
-| Clientes | `Customer` | `TaxDocument` | `CustomerRepository` | `PgCustomerRepository` |
-| Veículos | `Vehicle` | `VehiclePlate` | `VehicleRepository` | `PgVehicleRepository` |
-| Catálogo de serviços | `Service` | `Money` | `ServiceRepository` | `PgServiceRepository` |
-| Estoque | `Part` | `InventoryMovement`, `Money` | `PartRepository` | `PgPartRepository` |
-| Oficina | `Workshop` | `TaxDocument` | `WorkshopRepository` | `PgWorkshopRepository` |
-| Ordens de serviço | `WorkOrder` | `WorkOrderItem`, `QuoteDecision`, `StatusChange`, `TrackingCode`, `Quantity`, `Money` | `WorkOrderRepository` | `PgWorkOrderRepository` |
-| Identidade | `AdminUser` | credencial criptografada | `AdminUserRepository` | `PgAdminUserRepository` |
-
-Os repositórios representam raízes de agregados. Itens, decisões, alterações de status e movimentações são persistidos pelo repositório da raiz que protege suas invariantes. As projeções de consulta e a métrica de tempo médio usam `WorkOrderQueries`, uma porta de leitura da aplicação, separada do contrato de escrita do agregado.
-
-As alterações do estado passam por métodos com intenção explícita: `Customer.rename/changeEmail/changePhone`, `Vehicle.changeBrand/changeModel/changeYear`, `Service.changePrice/changeEstimatedMinutes/activate/deactivate` e `Part.changeMinimumStock/receiveStock/withdrawStock`. Os casos de uso de atualização aplicam somente as ações presentes na requisição antes de salvar a entidade.
-
-```mermaid
-flowchart LR
-  HTTP[Rotas HTTP por módulo<br/>presentation/routes] --> UC[Um caso de uso por ação<br/>application/use-cases]
-  UC --> D[Entidades e objetos de valor<br/>domain]
-  UC --> P[Interfaces por agregado<br/>domain]
-  R[Adaptador PostgreSQL por agregado<br/>infrastructure/repositories] -. implementa .-> P
-  M[Adaptador em memória por agregado<br/>infrastructure/in-memory] -. implementa .-> P
-  UOW[Unidade de trabalho<br/>application] -. implementada por .-> PGUOW[PgUnitOfWork]
-  UC --> UOW
-  R --> DAO[DAO SQL parametrizado]
-  DAO --> DB[(PostgreSQL)]
-```
-
-- `src/domain/` possui uma pasta por conceito: `customer`, `vehicle`, `service`, `part`, `workshop`, `work-order` e `identity`. Cada agregado possui entidade e contrato do repositório; objetos de valor estão em `shared`.
-- `src/application/use-cases/` possui arquivos separados para criar, consultar, listar, atualizar, excluir/desativar e para os fluxos de OS. Casos de uso transacionais recebem `UnitOfWork`; consultas detalhadas recebem a porta `WorkOrderQueries`.
-- `src/infrastructure/repositories/` possui um adaptador por repositório. `src/infrastructure/queries/` implementa as projeções de leitura da OS. `src/infrastructure/database/postgres-dao.ts` executa SQL parametrizado e `pg-unit-of-work.ts` compartilha a mesma transação entre adaptadores.
-- `src/infrastructure/in-memory/` possui um adaptador por repositório, projeções de leitura e uma unidade de trabalho em memória. Um caso de uso recebe exatamente os mesmos contratos nos dois ambientes; a unidade de trabalho descarta o estado da transação quando ocorre uma exceção.
-- `src/presentation/routes/` adapta HTTP, autenticação e schemas. `src/presentation/presenters.ts` traduz entidades para respostas; `src/composition.ts` faz a ligação entre as camadas.
-
-O grupo deve comparar este material com o quadro Miro final e atualizar os diagramas se as decisões do Event Storming mudarem.
+Este é um artefato local/versionado de modelagem, preparado a partir dos requisitos e implementação; não é evidência de uma sessão colaborativa já realizada. O grupo deve validar o quadro, importar/exportar em Miro ou equivalente e preencher o link compartilhável em `docs/entrega/modelo.md`. A implementação não publica links externos automaticamente.

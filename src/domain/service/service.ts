@@ -5,6 +5,7 @@ export class Service {
   constructor(readonly id: number | undefined, readonly name: string, readonly description: string | undefined,
     readonly price: Money, readonly estimatedMinutes: number, readonly active: boolean = true) {
     if (!name.trim() || !Number.isSafeInteger(estimatedMinutes) || estimatedMinutes <= 0) throw new DomainError('Serviço inválido');
+    Object.freeze(this);
   }
   static create(input: { name: string; description?: string; priceCents: number; estimatedMinutes: number }): Service {
     return new Service(undefined, input.name.trim(), input.description, new Money(input.priceCents), input.estimatedMinutes);

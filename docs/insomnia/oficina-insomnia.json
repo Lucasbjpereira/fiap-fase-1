@@ -24,7 +24,8 @@
         "part_id": "1",
         "work_order_id": "1",
         "tracking_code": "",
-        "workshop_id": "1"
+        "workshop_id": "1",
+        "quote_version": 1
       }
     },
     {
@@ -598,7 +599,7 @@
       "url": "{{ _.base_url }}/api/v1/public/work-orders/{{ _.tracking_code }}/decision",
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"approved\": true\n}"
+        "text": "{\n  \"approved\": true,\n  \"quoteVersion\": {{ _.quote_version }}\n}"
       },
       "headers": [
         {
@@ -674,7 +675,7 @@
       "url": "{{ _.base_url }}/api/v1/public/work-orders/{{ _.tracking_code }}/decision",
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"approved\": false,\n  \"reason\": \"Solicito revisar o orçamento\"\n}"
+        "text": "{\n  \"approved\": false,\n  \"reason\": \"Solicito revisar o orçamento\",\n  \"quoteVersion\": {{ _.quote_version }}\n}"
       },
       "headers": [
         {

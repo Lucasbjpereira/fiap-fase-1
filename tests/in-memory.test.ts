@@ -17,7 +17,7 @@ import { GetWorkshop } from '../src/application/use-cases/workshop/get-workshop'
 import { CreateWorkOrder } from '../src/application/use-cases/work-order/create-work-order';
 import { ChangeWorkOrderStatus } from '../src/application/use-cases/work-order/change-work-order-status';
 import { DecideQuote } from '../src/application/use-cases/work-order/decide-quote';
-import { AddWorkOrderItem } from '../src/application/use-cases/work-order/add-work-order-item';
+import { ProposeAdditionalRepair } from '../src/application/use-cases/work-order/propose-additional-repair';
 import { TrackWorkOrder } from '../src/application/use-cases/work-order/track-work-order';
 import { GetWorkOrder } from '../src/application/use-cases/work-order/get-work-order';
 import { GetAverageExecutionTime } from '../src/application/use-cases/work-order/get-average-execution-time';
@@ -45,7 +45,7 @@ describe('adaptadores in-memory', () => {
   });
 
   it('reverte aprovação incompleta e conclui o fluxo após reposição de estoque', async () => {
-    const { repositories, unitOfWork, workOrderQueries } = createInMemoryEnvironment();
+    const { store, repositories, unitOfWork, workOrderQueries } = createInMemoryEnvironment();
     const customer = await new CreateCustomer(repositories.customers).execute({ name: 'Marina Souza', document: '52998224725' });
     const vehicle = await new CreateVehicle(repositories.vehicles, repositories.customers).execute({ customerId: customer.id!, plate: 'ABC1D23', brand: 'Honda', model: 'Civic', year: 2022 });
     const service = await new CreateService(repositories.services).execute({ name: 'Revisão', priceCents: 10000, estimatedMinutes: 60 });
@@ -65,12 +65,17 @@ describe('adaptadores in-memory', () => {
     await changeStatus.execute(created.id!, 'AWAITING_APPROVAL');
     await adjustStock.execute(secondPart.id!, -1, 'Reserva externa');
 
+    const eventCount = store.state.events.length;
     await expect(decide.execute(created.trackingCode, true)).rejects.toMatchObject({ kind: 'conflict' });
+    expect(store.state.events).toHaveLength(eventCount);
     expect((await repositories.parts.findById(firstPart.id!))?.stockQuantity).toBe(1);
     expect((await repositories.workOrders.findById(created.id!))?.status).toBe('AWAITING_APPROVAL');
     expect((await repositories.workOrders.findById(created.id!))?.decisions).toHaveLength(0);
     expect(await repositories.parts.movements(firstPart.id!)).toHaveLength(0);
 
+    await decide.execute(created.trackingCode, false, 'Rever proposta', 1);
+    expect((await repositories.parts.findById(firstPart.id!))?.stockQuantity).toBe(1);
+    expect(store.state.events.at(-1)?.name).toBe('QuoteRejected');
     await adjustStock.execute(secondPart.id!, 1, 'Reposição');
     await decide.execute(created.trackingCode, true);
     expect((await repositories.parts.findById(firstPart.id!))?.stockQuantity).toBe(0);
@@ -80,14 +85,17 @@ describe('adaptadores in-memory', () => {
     expect(publicView).not.toHaveProperty('document');
 
     await adjustStock.execute(firstPart.id!, 1, 'Reposição adicional');
-    await new AddWorkOrderItem(unitOfWork).execute(created.id!, { type: 'PART', id: firstPart.id!, quantity: 1 });
+    await new ProposeAdditionalRepair(unitOfWork).execute({ workOrderId: created.id!, item: { type: 'PART', id: firstPart.id!, quantity: 1 } });
     expect((await repositories.workOrders.findById(created.id!))?.status).toBe('AWAITING_APPROVAL');
-    await decide.execute(created.trackingCode, true);
+    await expect(decide.execute(created.trackingCode, true, undefined, 1)).rejects.toMatchObject({ kind: 'conflict' });
+    await decide.execute(created.trackingCode, true, undefined, 2);
+    expect(store.state.events.map(event => event.name)).toContain('ExecutionResumed');
+    expect(store.state.events.filter(event => event.name === 'PartsConsumed')).toHaveLength(3);
     await changeStatus.execute(created.id!, 'FINISHED');
     await changeStatus.execute(created.id!, 'DELIVERED');
     const detail = await new GetWorkOrder(workOrderQueries).execute(created.id!);
     expect(detail.status).toBe('DELIVERED');
-    expect((detail.decisions as unknown[]).length).toBe(2);
+    expect((detail.decisions as unknown[]).length).toBe(3);
     expect((await new GetAverageExecutionTime(workOrderQueries).execute()).completed_orders).toBe(1);
   });
 });

@@ -10,6 +10,7 @@ export class Customer {
     readonly phone?: string
   ) {
     if (name.trim().length < 2) throw new DomainError('Nome do cliente inválido');
+    Object.freeze(this);
   }
   static create(input: { name: string; document: string; email?: string; phone?: string }): Customer {
     return new Customer(undefined, input.name.trim(), new TaxDocument(input.document), input.email, input.phone);

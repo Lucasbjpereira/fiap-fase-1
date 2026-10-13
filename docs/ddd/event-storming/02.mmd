@@ -1,0 +1,41 @@
+flowchart LR
+  classDef ev fill:#ffca28,stroke:#172033;
+  classDef cmd fill:#00c5cf,stroke:#172033;
+  classDef ag fill:#fff2a1,stroke:#172033;
+  classDef ml fill:#76d66c,stroke:#172033;
+  classDef pol fill:#e58be8,stroke:#172033;
+  classDef pa fill:#ff6c88,stroke:#172033;
+  C01["EV C01: Oficina cadastrada"]:::ev
+  C02["EV C02: Cliente cadastrado"]:::ev
+  C03["EV C03: Contato do cliente alterado"]:::ev
+  C04["EV C04: Veículo vinculado ao cliente"]:::ev
+  C05["EV C05: Dados do veículo alterados"]:::ev
+  C06["EV C06: Serviço cadastrado"]:::ev
+  C07["EV C07: Preço do serviço alterado"]:::ev
+  C08["EV C08: Serviço desativado"]:::ev
+  C09["EV C09: Peça cadastrada com saldo inicial"]:::ev
+  C10["EV C10: Preço da peça alterado"]:::ev
+  C11["EV C11: Estoque mínimo alterado"]:::ev
+  C12["EV C12: Peça desativada"]:::ev
+  E01["EV E01: OS recebida"]:::ev
+  E02["EV E02: Orçamento calculado"]:::ev
+  E03["EV E03: Diagnóstico iniciado"]:::ev
+  E04["EV E04: Orçamento apresentado"]:::ev
+  E05["EV E05: Orçamento aprovado"]:::ev
+  E06["EV E06: Orçamento rejeitado"]:::ev
+  E07["EV E07: Execução iniciada"]:::ev
+  E08["EV E08: Reparo adicional proposto"]:::ev
+  E09["EV E09: Execução pausada"]:::ev
+  E10["EV E10: Orçamento revisado"]:::ev
+  E11["EV E11: Execução retomada"]:::ev
+  E12["EV E12: Reparo finalizado"]:::ev
+  E13["EV E13: Veículo entregue"]:::ev
+  E14["EV E14: Entrada de estoque registrada"]:::ev
+  E15["EV E15: Saída manual registrada"]:::ev
+  E16["EV E16: Peças consumidas na OS"]:::ev
+  E17["EV E17: Estoque mínimo atingido"]:::ev
+  C02 --> C04 --> E01 --> E02 --> E03 --> E04 --> E05 --> E07 --> E12 --> E13
+  E04 --> E06 -. nova decisão .-> E04
+  E07 --> E08 --> E09 --> E10 --> E04
+  E05 --> E16 --> E17
+  E05 -. reaprovação .-> E11

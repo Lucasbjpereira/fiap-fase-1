@@ -8,7 +8,7 @@ export abstract class PostgresDao {
   constructor(protected readonly sql: SqlConnection) {}
 
   protected async rows<T>(statement: string, parameters: Parameter[] = []): Promise<T[]> {
-    return await this.sql.unsafe(statement, parameters) as unknown as T[];
+    return await this.sql.unsafe(statement, parameters.map(parameter => parameter instanceof Date ? parameter.toISOString() : parameter)) as unknown as T[];
   }
 
   protected async first<T>(statement: string, parameters: Parameter[] = []): Promise<T | undefined> {
