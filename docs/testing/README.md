@@ -1,5 +1,7 @@
 # Estratégia e execução dos testes
 
+A pipeline completa e os checks obrigatórios estão descritos em [GitHub Actions](ci.md).
+
 ## Comandos
 
 Todos os comandos partem da raiz do projeto, após `bun install`.

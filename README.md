@@ -35,6 +35,8 @@ bun run db:seed
 bun run dev
 ```
 
+O seed exige `ADMIN_PASSWORD` no ambiente (o `.env.example` e o Compose incluem um exemplo local). O código de produção não possui senha de banco ou administrador como fallback.
+
 ## Autenticação e demonstração
 
 Faça `POST /api/v1/auth/login` com JSON `{"email":"admin@oficina.local","password":"TroqueEstaSenha123!"}`. Envie o token retornado como `Authorization: Bearer <token>` nas rotas administrativas.
@@ -105,6 +107,12 @@ Para testes com controle de retornos e inspeção de chamadas, use `createMockEn
 O limiar de cobertura é **90% por arquivo em linhas e funções**, incluindo **domínio, aplicação, infraestrutura e apresentação**. `test:coverage` executa obrigatoriamente as integrações. Os testes PostgreSQL aplicam as migrações em schemas exclusivos e revertem os dados e o DDL ao terminar; não precisam de seed nem da API já iniciada. `bun test`, `bun test --coverage`, `bun run test` e `bun run test:coverage` executam todas as integrações, sem depender de `RUN_INTEGRATION` e sem pulá-las. Os comandos completos exigem PostgreSQL; use `test:unit`, `test:controllers`, `test:repositories` ou `test:memory` para executar apenas os testes sem banco.
 
 Veja a [matriz de testes, comandos e exclusões da cobertura](docs/testing/README.md), as [verificações executadas](docs/evidencias/verificacoes.md) e o [relatório de auditoria de dependências](docs/security/dependency-audit.md).
+
+## Integração contínua
+
+A pipeline do GitHub Actions roda a suíte completa com PostgreSQL, verifica tipos/mocks e exige cobertura global de linhas e funções **acima de 90%**, com mínimo de 90% por arquivo e nenhum teste pulado. Depois sobe um SonarQube temporário usando o Compose da `main`, importa o LCOV e aguarda o Quality Gate. Não precisa de secrets externos.
+
+O check final **Quality Gate** reúne os resultados. Configure-o como obrigatório na proteção da `main` para bloquear merges. Detalhes, artefatos e reprodução: [pipeline de qualidade](docs/testing/ci.md).
 
 ## Estrutura
 

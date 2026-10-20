@@ -66,8 +66,8 @@ export class Part {
     return { part, movement, events };
   }
   ensureAvailable(quantity: number): void {
-    new Quantity(quantity);
-    if (!this.active || this.stockQuantity < quantity) throw new DomainError('Estoque insuficiente ou peça indisponível', DomainErrorKind.Conflict);
+    const requested = new Quantity(quantity);
+    if (!this.active || this.stockQuantity < requested.value) throw new DomainError('Estoque insuficiente ou peça indisponível', DomainErrorKind.Conflict);
   }
 }
 
