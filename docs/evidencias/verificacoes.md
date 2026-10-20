@@ -44,3 +44,25 @@ Os testes de integração só são executados com `RUN_INTEGRATION=true`; sem es
 - Coleção Insomnia validada como JSON, com IDs únicos e descrições das duas exclusões em cascata. Não foi importada manualmente no aplicativo nesta revisão.
 - Build da imagem Docker concluído. O início do contêiner da API encontrou a porta 3000 ocupada por `bun --watch src/index.ts` do próprio projeto. Essa execução já ativa foi verificada: `/health` respondeu 200 com banco conectado e `/openapi/json` apresentou as duas rotas de cascata atualizadas.
 - Não houve nova análise de vulnerabilidades nesta revisão.
+
+## Cobertura mínima de 90% e integrações obrigatórias — 19/10/2026
+
+Esta revisão substitui o limiar de 80% e a seleção opcional de integrações descritos nos registros históricos acima.
+
+- `bunfig.toml`: limiar de **90% em linhas e funções por arquivo medido**. O escopo de medição foi preservado, incluindo infraestrutura e apresentação.
+- Removidos os três `describe.skipIf` e a condição `RUN_INTEGRATION`. `bun test`, `bun run test` e os comandos de cobertura executam todas as integrações com PostgreSQL real. Banco indisponível causa falha explícita.
+- Adicionados três testes para inicialização do estado, sequências de IDs independentes, cópia de contêineres e isolamento de sessões live/snapshot. O comando `test:unit` também os inclui.
+- Construtores explícitos dos adaptadores de consultas, serviços, oficinas e do store mantêm a injeção/inicialização testável e permitem que o Bun contabilize essas funções corretamente.
+
+| Verificação executada | Resultado |
+| --- | --- |
+| `bun run typecheck` | Aprovado. |
+| `bun run mocks:check` | 9 portas e 29 métodos sincronizados. |
+| `bun run test:unit` | 141 testes passaram, 0 falhas. Não requer PostgreSQL. |
+| `DATABASE_URL=postgres://oficina:oficina_local@127.0.0.1:5432/oficina bun run test` | 200 testes passaram, 0 falhas, nenhum teste pulado; 1.447 asserções. |
+| `DATABASE_URL=postgres://oficina:oficina_local@127.0.0.1:5432/oficina bun test --coverage` | 200 testes passaram, 0 falhas, nenhum teste pulado. |
+| `DATABASE_URL=postgres://oficina:oficina_local@127.0.0.1:5432/oficina bun run test:coverage` | 200 testes passaram, 0 falhas, nenhum teste pulado; 1.447 asserções em 13 arquivos. Código de saída 0. |
+| Resumo `All files` do Bun 1.3.8 | **100% das linhas e 99,61% das funções**. |
+| Verificação de cada linha do relatório de cobertura | Todos os **102 arquivos medidos** têm pelo menos 90% em linhas e funções; menor cobertura de funções: 90%. |
+
+Saída completa: [cobertura-90-2026-10-19.txt](cobertura-90-2026-10-19.txt). Comandos, matriz e exclusões: [estratégia de testes](../testing/README.md). Para executar as integrações, mantenha o PostgreSQL do Compose ativo; não é necessário migrar ou popular os dados de demonstração. Cada cenário usa schema próprio com rollback.

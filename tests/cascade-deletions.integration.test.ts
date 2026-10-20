@@ -1,13 +1,11 @@
 import { afterAll, describe, expect, it } from 'bun:test';
 import postgres from 'postgres';
 import { randomUUID } from 'node:crypto';
-import { repositoryContext } from '../src/infrastructure/database/pg-unit-of-work';
+import { PgUnitOfWork, repositoryContext } from '../src/infrastructure/database/pg-unit-of-work';
 import { PgWorkOrderQueries } from '../src/infrastructure/queries/work-order-queries';
-import type { RepositoryContext, UnitOfWork } from '../src/application/unit-of-work';
 import { DeleteCustomer } from '../src/application/use-cases/customer/delete-customer';
 import { registerCascadeDeletionTests, seedDeletionFixture, type DeletionEnvironment } from './support/cascade-deletion-contract';
 
-const enabled = process.env.RUN_INTEGRATION === 'true';
 const sql = postgres(process.env.DATABASE_URL ?? 'postgres://oficina:oficina_local@localhost:5432/oficina', {
   max: 1, connect_timeout: 5, onnotice: () => {}
 });
@@ -28,11 +26,7 @@ async function withPostgresSchema(
         await transaction.unsafe(await Bun.file(new URL(`../migrations/${file}`, import.meta.url)).text());
       }
       if (applyCascade) await transaction.unsafe(await Bun.file(cascadeMigration).text());
-      const unitOfWork: UnitOfWork = {
-        async run<T>(operation: (context: RepositoryContext) => Promise<T>): Promise<T> {
-          return await transaction.savepoint(savepoint => operation(repositoryContext(savepoint))) as T;
-        }
-      };
+      const unitOfWork = new PgUnitOfWork(transaction);
       const env: DeletionEnvironment = {
         repositories: repositoryContext(transaction), unitOfWork,
         workOrderQueries: new PgWorkOrderQueries(transaction),
@@ -48,7 +42,7 @@ async function withPostgresSchema(
 
 afterAll(() => sql.end());
 
-describe.skipIf(!enabled)('PostgreSQL: exclusões isoladas por schema e rollback', () => {
+describe('PostgreSQL: exclusões isoladas por schema e rollback', () => {
   registerCascadeDeletionTests('contrato de cascata PostgreSQL', check => withPostgresSchema(check));
 
   it('atualiza banco com relacionamentos existentes e permite reaplicar a migração', () => withPostgresSchema(async (env, transaction) => {
