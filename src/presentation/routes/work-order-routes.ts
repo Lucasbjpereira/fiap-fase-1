@@ -1,11 +1,11 @@
 import { Elysia, t } from 'elysia';
-import { useCases } from '../../composition';
+import type { UseCases } from '../../composition';
 import { WorkOrderStatus } from '../../domain/work-order/status';
 import { ItemKind } from '../../domain/work-order/work-order-item';
 
 export const itemSchema = t.Object({ type: t.Enum(ItemKind), id: t.Integer(), quantity: t.Integer({ minimum: 1 }) });
 
-export const publicWorkOrderRoutes = new Elysia()
+export const createPublicWorkOrderRoutes = (useCases: UseCases) => new Elysia()
   .get('/public/work-orders/:trackingCode', ({ params }) => useCases.workOrders.track.execute(params.trackingCode), {
     detail: { summary: 'Acompanha OS com código público não previsível' }
   })
@@ -14,7 +14,7 @@ export const publicWorkOrderRoutes = new Elysia()
     detail: { summary: 'Registra decisão do cliente sobre orçamento' }
   });
 
-export const workOrderRoutes = new Elysia()
+export const createWorkOrderRoutes = (useCases: UseCases) => new Elysia()
   .post('/work-orders', async ({ body, set }) => { set.status = 201; return useCases.workOrders.create.execute(body); }, {
     body: t.Object({ customerId: t.Optional(t.Integer()), customerDocument: t.Optional(t.String()), vehicleId: t.Integer(), complaint: t.String({ minLength: 3 }), items: t.Array(itemSchema) }),
     detail: { summary: 'Cria OS e orçamento inicial' }

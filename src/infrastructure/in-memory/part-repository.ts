@@ -23,6 +23,9 @@ export class InMemoryPartRepository implements PartRepository {
   async recordMovement(movement: InventoryMovement) {
     const state = this.session.state;
     if (!state.parts.has(movement.partId)) throw new ApplicationError(ErrorKind.Conflict, 'Peça não encontrada');
+    if (movement.workOrderId !== undefined && !state.workOrders.has(movement.workOrderId)) {
+      throw new ApplicationError(ErrorKind.Conflict, 'Ordem de serviço não encontrada');
+    }
     const saved = new InventoryMovement(nextId(state, 'movement'), movement.partId, movement.quantityDelta, movement.reason, movement.workOrderId, movement.createdAt);
     state.movements.push(saved);
   }

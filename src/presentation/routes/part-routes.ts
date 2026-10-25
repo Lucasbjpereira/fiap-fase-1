@@ -1,8 +1,8 @@
 import { Elysia, t } from 'elysia';
-import { useCases } from '../../composition';
+import type { UseCases } from '../../composition';
 import { movementView, partView } from '../presenters';
 
-export const partRoutes = new Elysia()
+export const createPartRoutes = (useCases: UseCases) => new Elysia()
   .get('/parts', async () => (await useCases.parts.list.execute()).map(partView))
   .get('/parts/:id', async ({ params }) => partView(await useCases.parts.get.execute(Number(params.id))))
   .post('/parts', async ({ body, set }) => { set.status = 201; return partView(await useCases.parts.create.execute(body)); }, {

@@ -54,9 +54,20 @@ Para atualizar um banco já existente, execute `bun run db:migrate`; o Docker Co
 ## Testes e segurança
 
 ```bash
+# Testes que não precisam de banco:
+bun run test:unit
+bun run test:controllers
+bun run test:repositories
 bun run test:memory
-bun run test:coverage
 bun run typecheck
+bun run mocks:check
+
+# Suíte completa e cobertura (PostgreSQL obrigatório):
+docker compose up -d db
+DATABASE_URL=postgres://oficina:oficina_local@127.0.0.1:5432/oficina bun run test
+DATABASE_URL=postgres://oficina:oficina_local@127.0.0.1:5432/oficina bun run test:integration
+DATABASE_URL=postgres://oficina:oficina_local@127.0.0.1:5432/oficina bun run test:coverage
+
 bun run security:audit
 ```
 
@@ -91,7 +102,9 @@ const customer = await createCustomer.execute({ name: 'Marina Souza', document: 
 
 Para testes com controle de retornos e inspeção de chamadas, use `createMockEnvironment()` de `tests/mocks`. Uma chamada cria os mocks dos sete repositórios, eventos, consultas de OS e UnitOfWork, além de entidades fictícias relacionadas. `bun run mocks:generate` atualiza os mocks a partir das interfaces; `bun run mocks:check` confere a sincronização. Exemplos: [mocks e fábricas](docs/testing/mocks.md).
 
-O limiar de cobertura configurado é 80% em linhas e funções sobre domínio e casos de uso quando `test:coverage` é executado. Os testes integrados ficam habilitados ao executar `RUN_INTEGRATION=true DATABASE_URL=postgres://oficina:oficina_local@localhost:5432/oficina bun run test:coverage` com Docker Compose ativo e banco migrado/populado. O resultado observado está em [relatório de auditoria](docs/security/dependency-audit.md) e [verificações executadas](docs/evidencias/verificacoes.md).
+O limiar de cobertura é **90% por arquivo em linhas e funções**, incluindo **domínio, aplicação, infraestrutura e apresentação**. `test:coverage` executa obrigatoriamente as integrações. Os testes PostgreSQL aplicam as migrações em schemas exclusivos e revertem os dados e o DDL ao terminar; não precisam de seed nem da API já iniciada. `bun test`, `bun test --coverage`, `bun run test` e `bun run test:coverage` executam todas as integrações, sem depender de `RUN_INTEGRATION` e sem pulá-las. Os comandos completos exigem PostgreSQL; use `test:unit`, `test:controllers`, `test:repositories` ou `test:memory` para executar apenas os testes sem banco.
+
+Veja a [matriz de testes, comandos e exclusões da cobertura](docs/testing/README.md), as [verificações executadas](docs/evidencias/verificacoes.md) e o [relatório de auditoria de dependências](docs/security/dependency-audit.md).
 
 ## Estrutura
 

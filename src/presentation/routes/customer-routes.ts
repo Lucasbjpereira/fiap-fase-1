@@ -1,8 +1,8 @@
 import { Elysia, t } from 'elysia';
-import { useCases } from '../../composition';
+import type { UseCases } from '../../composition';
 import { customerView } from '../presenters';
 
-export const customerRoutes = new Elysia()
+export const createCustomerRoutes = (useCases: UseCases) => new Elysia()
   .get('/customers', async ({ query }) => (await useCases.customers.list.execute(query.limit, query.offset)).map(customerView))
   .post('/customers', async ({ body, set }) => { set.status = 201; return customerView(await useCases.customers.create.execute(body)); }, {
     body: t.Object({ name: t.String({ minLength: 2 }), document: t.String(), email: t.Optional(t.String()), phone: t.Optional(t.String()) })

@@ -1,8 +1,8 @@
 import { Elysia, t } from 'elysia';
-import { useCases } from '../../composition';
+import type { UseCases } from '../../composition';
 import { serviceView } from '../presenters';
 
-export const serviceRoutes = new Elysia()
+export const createServiceRoutes = (useCases: UseCases) => new Elysia()
   .get('/services', async () => (await useCases.services.list.execute()).map(serviceView))
   .get('/services/:id', async ({ params }) => serviceView(await useCases.services.get.execute(Number(params.id))))
   .post('/services', async ({ body, set }) => { set.status = 201; return serviceView(await useCases.services.create.execute(body)); }, {
