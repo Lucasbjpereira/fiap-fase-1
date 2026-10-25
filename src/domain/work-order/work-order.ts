@@ -18,7 +18,7 @@ export class WorkOrder {
   constructor(readonly id: number | undefined, readonly customerId: number, readonly vehicleId: number,
     readonly complaint: string, readonly trackingCode: TrackingCode, readonly status: WorkOrderStatus,
     items: readonly WorkOrderItem[] = [], decisions: readonly QuoteDecision[] = [],
-    history: readonly StatusChange[] = [], readonly quoteVersion: QuoteVersion = new QuoteVersion(),
+    history: readonly StatusChange[] = [], readonly quoteVersion: QuoteVersion = new QuoteVersion(1),
     pendingEvents: readonly DomainEvent[] = []) {
     if (!Number.isSafeInteger(customerId) || customerId <= 0 || !Number.isSafeInteger(vehicleId) || vehicleId <= 0 || complaint.trim().length < 3) throw new DomainError('Ordem de serviço inválida');
     this.items = Object.freeze([...items]);
@@ -31,7 +31,7 @@ export class WorkOrder {
   static create(customerId: number, vehicleId: number, complaint: string, items: WorkOrderItem[]): WorkOrder {
     if (!items.length) throw new DomainError('A OS deve conter ao menos um serviço ou peça');
     const code = TrackingCode.generate();
-    const total = Quote.calculate(items, new QuoteVersion());
+    const total = Quote.calculate(items, new QuoteVersion(1));
     return new WorkOrder(undefined, customerId, vehicleId, complaint.trim(), code, 'RECEIVED', items, [],
       [new StatusChange(null, 'RECEIVED', 'OS criada')], total.version, [
         new DomainEvent('WorkOrderReceived', 'WorkOrder', code.value, { customerId, vehicleId }),
@@ -68,7 +68,7 @@ export class WorkOrder {
     return this.changeStatus('AWAITING_APPROVAL', note, [this.event('QuoteSubmitted', { totalCents: this.quote.cents })]);
   }
 
-  approveQuote(expectedVersion: QuoteVersion = this.quoteVersion, reason?: string): WorkOrder {
+  approveQuote(expectedVersion: QuoteVersion, reason?: string): WorkOrder {
     this.requireStatus('AWAITING_APPROVAL');
     this.ensureCurrentQuote(expectedVersion);
     const resumed = this.history.some(change => change.to === 'IN_PROGRESS');
@@ -80,7 +80,7 @@ export class WorkOrder {
         this.event(resumed ? 'ExecutionResumed' : 'ExecutionStarted')]);
   }
 
-  rejectQuote(expectedVersion: QuoteVersion = this.quoteVersion, reason?: string): WorkOrder {
+  rejectQuote(expectedVersion: QuoteVersion, reason?: string): WorkOrder {
     this.requireStatus('AWAITING_APPROVAL');
     this.ensureCurrentQuote(expectedVersion);
     return new WorkOrder(this.id, this.customerId, this.vehicleId, this.complaint, this.trackingCode, this.status,

@@ -10,7 +10,7 @@ export class DecideQuote {
     this.approve = new ApproveQuote(unitOfWork);
     this.reject = new RejectQuote(unitOfWork);
   }
-  execute(trackingCode: string, approved: boolean, reason?: string, quoteVersion?: number) {
+  execute(trackingCode: string, approved: boolean, quoteVersion: number, reason?: string) {
     const command = { trackingCode, reason, quoteVersion };
     return approved ? this.approve.execute(command) : this.reject.execute(command);
   }

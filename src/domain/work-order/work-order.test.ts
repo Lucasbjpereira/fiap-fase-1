@@ -16,13 +16,13 @@ describe('agregado Ordem de Serviço', () => {
     const order = WorkOrder.create(1, 2, 'Revisão preventiva', [service()])
       .startDiagnosis().submitQuote();
     expect(() => order.finishRepair()).toThrow();
-    const approved = order.approveQuote();
+    const approved = order.approveQuote(order.quoteVersion);
     expect(approved.status).toBe('IN_PROGRESS');
     expect(approved.decisions).toHaveLength(1);
   });
   it('reparo adicional exige nova aprovação', () => {
-    const order = WorkOrder.create(1, 2, 'Revisão preventiva', [service()])
-      .startDiagnosis().submitQuote().approveQuote();
+    const received = WorkOrder.create(1, 2, 'Revisão preventiva', [service()]);
+    const order = received.startDiagnosis().submitQuote().approveQuote(received.quoteVersion);
     const additional = order.proposeAdditionalRepair(new WorkOrderItem(undefined, 'PART', 1, 'Filtro', new Quantity(1), new Money(3500)));
     expect(additional.status).toBe('AWAITING_APPROVAL');
     expect(additional.quote.cents).toBe(28500);
@@ -40,13 +40,13 @@ it('protege snapshots, preserva decisões por versão e rejeita orçamento obsol
   const rejected = waiting.rejectQuote(waiting.quoteVersion, 'Rever orçamento');
   expect(rejected.status).toBe('AWAITING_APPROVAL');
   expect(rejected.items[0].consumed).toBe(false);
-  const approved = rejected.approveQuote();
+  const approved = rejected.approveQuote(rejected.quoteVersion);
   expect(approved.items[0].consumed).toBe(true);
   const revised = approved.proposeAdditionalRepair(item);
   expect(revised.quoteVersion.value).toBe(2);
   expect(revised.decisions[0].quoteVersion.value).toBe(1);
   expect(() => revised.approveQuote(waiting.quoteVersion)).toThrow('Orçamento alterado');
-  expect(revised.approveQuote().pendingEvents.map(event => event.name)).toContain('ExecutionResumed');
+  expect(revised.approveQuote(revised.quoteVersion).pendingEvents.map(event => event.name)).toContain('ExecutionResumed');
   expect(() => approved.items[0].markConsumed()).toThrow();
   expect(() => waiting.recordDelivery()).toThrow();
 });

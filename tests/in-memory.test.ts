@@ -66,18 +66,18 @@ describe('adaptadores in-memory', () => {
     await adjustStock.execute(secondPart.id!, -1, 'Reserva externa');
 
     const eventCount = store.state.events.length;
-    await expect(decide.execute(created.trackingCode, true)).rejects.toMatchObject({ kind: 'conflict' });
+    await expect(decide.execute(created.trackingCode, true, 1)).rejects.toMatchObject({ kind: 'conflict' });
     expect(store.state.events).toHaveLength(eventCount);
     expect((await repositories.parts.findById(firstPart.id!))?.stockQuantity).toBe(1);
     expect((await repositories.workOrders.findById(created.id!))?.status).toBe('AWAITING_APPROVAL');
     expect((await repositories.workOrders.findById(created.id!))?.decisions).toHaveLength(0);
     expect(await repositories.parts.movements(firstPart.id!)).toHaveLength(0);
 
-    await decide.execute(created.trackingCode, false, 'Rever proposta', 1);
+    await decide.execute(created.trackingCode, false, 1, 'Rever proposta');
     expect((await repositories.parts.findById(firstPart.id!))?.stockQuantity).toBe(1);
     expect(store.state.events.at(-1)?.name).toBe('QuoteRejected');
     await adjustStock.execute(secondPart.id!, 1, 'Reposição');
-    await decide.execute(created.trackingCode, true);
+    await decide.execute(created.trackingCode, true, 1);
     expect((await repositories.parts.findById(firstPart.id!))?.stockQuantity).toBe(0);
     expect((await repositories.workOrders.findById(created.id!))?.status).toBe('IN_PROGRESS');
     const publicView = await new TrackWorkOrder(workOrderQueries).execute(created.trackingCode);
@@ -87,8 +87,8 @@ describe('adaptadores in-memory', () => {
     await adjustStock.execute(firstPart.id!, 1, 'Reposição adicional');
     await new ProposeAdditionalRepair(unitOfWork).execute({ workOrderId: created.id!, item: { type: 'PART', id: firstPart.id!, quantity: 1 } });
     expect((await repositories.workOrders.findById(created.id!))?.status).toBe('AWAITING_APPROVAL');
-    await expect(decide.execute(created.trackingCode, true, undefined, 1)).rejects.toMatchObject({ kind: 'conflict' });
-    await decide.execute(created.trackingCode, true, undefined, 2);
+    await expect(decide.execute(created.trackingCode, true, 1)).rejects.toMatchObject({ kind: 'conflict' });
+    await decide.execute(created.trackingCode, true, 2);
     expect(store.state.events.map(event => event.name)).toContain('ExecutionResumed');
     expect(store.state.events.filter(event => event.name === 'PartsConsumed')).toHaveLength(3);
     await changeStatus.execute(created.id!, 'FINISHED');

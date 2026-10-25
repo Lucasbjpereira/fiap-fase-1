@@ -39,7 +39,11 @@ describe.skipIf(!enabled)('fluxo integrado da API (requer PostgreSQL migrado e s
     }
     const tracking = await fetch(`${baseUrl}/api/v1/public/work-orders/${order.trackingCode}`);
     expect(tracking.status).toBe(200);
-    expect((await tracking.json() as { quoteVersion: number }).quoteVersion).toBe(1);
+    const publicView = await tracking.json() as { quoteVersion: number; items: unknown[] };
+    expect(publicView.quoteVersion).toBe(1);
+    expect(publicView.items).toHaveLength(2);
+    const missingVersion = await fetch(`${baseUrl}/api/v1/public/work-orders/${order.trackingCode}/decision`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ approved: true }) });
+    expect(missingVersion.status).toBe(422);
     const rejected = await fetch(`${baseUrl}/api/v1/public/work-orders/${order.trackingCode}/decision`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ approved: false, quoteVersion: 1, reason: 'Revisão do cliente' }) });
     expect(rejected.status).toBe(200);
     const decision = await fetch(`${baseUrl}/api/v1/public/work-orders/${order.trackingCode}/decision`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ approved: true, quoteVersion: 1 }) });
