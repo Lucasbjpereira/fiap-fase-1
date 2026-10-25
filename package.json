@@ -14,6 +14,8 @@
     "test:coverage": "bun test --coverage",
     "mocks:generate": "bun scripts/generate-test-mocks.ts",
     "mocks:check": "bun scripts/generate-test-mocks.ts --check",
+    "test:sonar": "bun test --coverage --coverage-reporter=text --coverage-reporter=lcov",
+    "sonar:scan": "docker compose --profile sonar run --rm sonar-scanner",
     "typecheck": "tsc --noEmit",
     "security:audit": "bun audit"
   },

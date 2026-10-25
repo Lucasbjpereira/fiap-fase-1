@@ -62,6 +62,26 @@ bun run security:audit
 
 `bun run test:memory` executa apenas os testes dos repositórios em memória e dos casos de uso; não precisa de Docker, PostgreSQL nem `DATABASE_URL`. Para escrever outro teste, chame `createInMemoryEnvironment()` de `src/infrastructure/in-memory/context.ts` e injete `repositories`, `unitOfWork` e `workOrderQueries` nos casos de uso. Cada chamada cria um estado isolado.
 
+### Análise de qualidade e segurança com SonarQube
+
+O SonarQube Community Build local analisa o código TypeScript em busca de bugs, vulnerabilidades e pontos de manutenção, e importa a cobertura LCOV gerada pelo Bun. O servidor e seu PostgreSQL ficam em um perfil Docker separado dos serviços normais da aplicação.
+
+1. Opcionalmente, configure `SONAR_DB_PASSWORD` no arquivo `.env`. Inicie somente o SonarQube e o banco dele:
+
+   ```bash
+   docker compose --profile sonar up -d sonarqube
+   ```
+
+2. Aguarde o servidor ficar disponível em `http://localhost:9000`, entre com as credenciais iniciais `admin` / `admin`, troque a senha e gere um token de análise do tipo **Project Analysis Token**.
+3. Salve o token como `SONAR_TOKEN` em `.env` e gere cobertura e análise:
+
+   ```bash
+   bun run test:sonar
+   bun run sonar:scan
+   ```
+
+O resultado aparece no projeto `oficina-tech-challenge` no SonarQube. Para encerrar os serviços sem apagar os dados: `docker compose --profile sonar down`. Não use `down -v` se quiser preservar o histórico e as configurações do SonarQube.
+
 ```ts
 const { repositories, unitOfWork, workOrderQueries } = createInMemoryEnvironment();
 const createCustomer = new CreateCustomer(repositories.customers);
