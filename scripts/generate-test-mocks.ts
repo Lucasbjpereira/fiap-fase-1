@@ -7,6 +7,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const output = resolve(root, 'tests/mocks/generated');
 const header = '// Gerado por bun run mocks:generate. Não edite manualmente.\n';
 const check = process.argv.includes('--check');
+const normalizeLineEndings = (content: string) => content.replace(/\r\n?/g, '\n');
 const configPath = ts.findConfigFile(root, ts.sys.fileExists, 'tsconfig.json');
 if (!configPath) throw new Error('tsconfig.json não encontrado');
 const config = ts.readConfigFile(configPath, ts.sys.readFile);
@@ -107,7 +108,7 @@ const stale: string[] = [];
 if (!check) await mkdir(output, { recursive: true });
 for (const [name, content] of files) {
   const file = resolve(output, name);
-  const previous = existing.includes(name) ? await readFile(file, 'utf8') : undefined;
+  const previous = existing.includes(name) ? normalizeLineEndings(await readFile(file, 'utf8')) : undefined;
   if (previous === content) continue;
   stale.push(name);
   if (!check) {
@@ -117,7 +118,7 @@ for (const [name, content] of files) {
 }
 for (const name of existing.filter(name => name.endsWith('.ts') && !files.has(name))) {
   const file = resolve(output, basename(name));
-  if (!(await readFile(file, 'utf8')).startsWith(header)) continue;
+  if (!normalizeLineEndings(await readFile(file, 'utf8')).startsWith(header)) continue;
   stale.push(name);
   if (!check) await unlink(file);
 }
