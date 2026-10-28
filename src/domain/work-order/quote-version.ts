@@ -1,7 +1,7 @@
 import { DomainError } from '../shared/domain-error';
 
 export class QuoteVersion {
-  constructor(readonly value: number = 1) {
+  constructor(readonly value: number) {
     if (!Number.isSafeInteger(value) || value < 1) throw new DomainError('Versão do orçamento inválida');
     Object.freeze(this);
   }

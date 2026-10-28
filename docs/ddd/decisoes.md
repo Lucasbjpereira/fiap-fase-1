@@ -4,7 +4,7 @@
 |---|---|---|---|
 | H01 | Reservar peças na criação? | Conferir disponibilidade; consumir na aprovação. | CreateWorkOrder + ApproveQuote. Duas OS podem inicialmente orçar a mesma peça; a última aprovação sem saldo falha. |
 | H02 | Rejeição cancela a OS? | Registrar rejeição e manter AWAITING_APPROVAL. | RejectQuote. Não existe estado de cancelamento. O MVP permite decisão posterior da mesma versão, mas não edição arbitrária do orçamento rejeitado. |
-| H03 | Qual versão foi aprovada? | Decisão guarda total e versão; uma versão fornecida e obsoleta é recusada. | QuoteVersion + QuoteDecision. `quoteVersion` é opcional na API para preservar clientes existentes: quem omite aprova a versão corrente. Envie o campo nas novas integrações. |
+| H03 | Qual versão foi aprovada? | Decisão guarda total e versão; somente uma decisão com a versão atual é aceita. | QuoteVersion + QuoteDecision. `quoteVersion` é obrigatório na API; consulte o orçamento público antes de aprovar ou rejeitar. |
 | H04 | Pode executar adicional sem aceite? | Pausar, incrementar versão e exigir nova aprovação. | ProposeAdditionalRepair. Peças consumidas anteriormente não são debitadas outra vez. |
 | H05 | Duas aprovações disputam estoque? | Bloquear OS/peças; ordenar locks de peças por ID; gravar tudo ou reverter tudo. | PgUnitOfWork + save de Part com versão otimista. In-memory serializa transações e só publica snapshot após sucesso. |
 | H06 | Como notificar o cliente? | Questão aberta. | Não há email, SMS nem entrega de mensagens. Cliente consulta por TrackingCode. |

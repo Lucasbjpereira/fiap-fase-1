@@ -144,7 +144,7 @@ docs/evidencias/                  resultados observados de execução
 
 Abra **http://localhost:3000/event-storming/** com a API em execução ou abra `docs/ddd/event-storming/index.html` diretamente no navegador, sem rede. O material separa descoberta, timeline, pontos de atenção, eventos pivotais, comandos/atores, leituras/políticas, agregados/entidades/VOs e bounded contexts. Inclui SVGs independentes, Mermaid e explicações de cada etapa.
 
-A OS usa comportamentos explícitos, handlers por intenção e persistência do agregado completo. Aprovação e movimentos de estoque registram eventos em `domain_events` junto com a transação. Não há broker ou Event Sourcing. Orçamento e decisões possuem versão; envie `quoteVersion` retornado no acompanhamento público ao aprovar/rejeitar. O campo permanece opcional por compatibilidade, e quando enviado rejeita uma versão obsoleta.
+A OS usa comportamentos explícitos, handlers por intenção e persistência do agregado completo. Aprovação e movimentos de estoque registram eventos em `domain_events` junto com a transação. Não há broker ou Event Sourcing. Orçamento e decisões possuem versão; envie o `quoteVersion` retornado no acompanhamento público ao aprovar/rejeitar. O campo é obrigatório, e uma versão obsoleta é recusada.
 
 Para regenerar os quadros: `python3 scripts/generate-event-storming.py`. Detalhes: [modelo tático](docs/ddd/modelo-tatico.md), [decisões](docs/ddd/decisoes.md) e [rastreabilidade](docs/ddd/rastreabilidade.md).
 

@@ -13,7 +13,7 @@ export function createWorkOrderFactory(context: FactoryContext,
   return (overrides: Partial<WorkOrderProps> = {}): WorkOrder => {
     const sequence = context.nextId('workOrder');
     const props = { id: sequence, customerId: 1, vehicleId: 1, complaint: 'Revisão preventiva',
-      trackingCode: new TrackingCode(String(sequence).padStart(32, '0')), quoteVersion: new QuoteVersion(), ...overrides };
+      trackingCode: new TrackingCode(String(sequence).padStart(32, '0')), quoteVersion: new QuoteVersion(1), ...overrides };
     return new WorkOrder(props.id, props.customerId, props.vehicleId, props.complaint, props.trackingCode,
       WorkOrderStatus.Received, overrides.items ?? [item()], [], [statusChange()], props.quoteVersion);
   };

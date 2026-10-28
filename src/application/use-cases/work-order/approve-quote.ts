@@ -4,14 +4,14 @@ import { requireFound } from '../../require-found';
 import { QuoteVersion } from '../../../domain/work-order/quote-version';
 import { Quantity } from '../../../domain/shared/value-objects';
 
-export interface ApproveQuoteCommand { readonly trackingCode: string; readonly quoteVersion?: number; readonly reason?: string }
+export interface ApproveQuoteCommand { readonly trackingCode: string; readonly quoteVersion: number; readonly reason?: string }
 
 export class ApproveQuote {
   constructor(private readonly unitOfWork: UnitOfWork) {}
   execute(command: ApproveQuoteCommand) {
     return this.unitOfWork.run(async context => {
       const order = requireFound(await context.workOrders.findByTrackingCode(command.trackingCode, true), 'OS');
-      const changed = order.approveQuote(command.quoteVersion === undefined ? order.quoteVersion : new QuoteVersion(command.quoteVersion), command.reason);
+      const changed = order.approveQuote(new QuoteVersion(command.quoteVersion), command.reason);
       const pendingParts = new Map<number, number>();
       for (const item of order.items.filter(item => item.kind === ItemKind.Part && !item.consumed)) {
         pendingParts.set(item.catalogId, (pendingParts.get(item.catalogId) ?? 0) + item.quantity.value);

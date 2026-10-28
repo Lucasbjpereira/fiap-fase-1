@@ -43,8 +43,8 @@ describe('Casos de uso: consultas, alterações e falhas', () => {
     ['apresentar orçamento', e => e.cases.workOrders.changeStatus.execute(999, Status.AwaitingApproval)],
     ['finalizar reparo', e => e.cases.workOrders.changeStatus.execute(999, Status.Finished)],
     ['entregar veículo', e => e.cases.workOrders.changeStatus.execute(999, Status.Delivered)],
-    ['aprovar orçamento', e => e.cases.workOrders.decide.execute('missing', true)],
-    ['rejeitar orçamento', e => e.cases.workOrders.decide.execute('missing', false)],
+    ['aprovar orçamento', e => e.cases.workOrders.decide.execute('missing', true, 1)],
+    ['rejeitar orçamento', e => e.cases.workOrders.decide.execute('missing', false, 1)],
     ['reparo adicional', e => e.cases.workOrders.addItem.execute({ workOrderId: 999, item: { type: ItemKind.Part, id: 1, quantity: 1 } })]
   ];
   it.each(missing)('%s retorna not_found e não grava', async (_, execute) => {
@@ -166,7 +166,7 @@ describe('Comandos transacionais de estoque e orçamento', () => {
     r.parts.findById.mockImplementation(async id => id === 2 ? part2 : part8);
     r.parts.save.mockImplementation(async p => p); r.parts.recordMovement.mockResolvedValue(undefined);
     r.workOrders.save.mockImplementation(async o => o); r.events.append.mockResolvedValue(undefined);
-    expect(await e.cases.workOrders.decide.execute(order.trackingCode.value, true)).toMatchObject({ approved: true });
+    expect(await e.cases.workOrders.decide.execute(order.trackingCode.value, true, order.quoteVersion.value)).toMatchObject({ approved: true });
     expect(r.workOrders.findByTrackingCode).toHaveBeenCalledWith(order.trackingCode.value, true);
     expect(r.parts.findById.mock.calls).toEqual([[2, true], [8, true]]);
     expect(r.parts.recordMovement.mock.calls.map(call => call[0].quantityDelta)).toEqual([-1, -2]);
@@ -175,7 +175,7 @@ describe('Comandos transacionais de estoque e orçamento', () => {
     const e = setup(), r = e.repositories;
     const order = e.fixtures.workOrder.startDiagnosis().submitQuote();
     r.workOrders.findByTrackingCode.mockResolvedValue(order);
-    await expect(e.cases.workOrders.decide.execute(order.trackingCode.value, approved, undefined, 2)).rejects.toMatchObject({ kind: 'conflict' });
+    await expect(e.cases.workOrders.decide.execute(order.trackingCode.value, approved, 2)).rejects.toMatchObject({ kind: 'conflict' });
     expect(r.parts.save).not.toHaveBeenCalled(); expect(r.parts.recordMovement).not.toHaveBeenCalled();
     expect(r.workOrders.save).not.toHaveBeenCalled(); expect(r.events.append).not.toHaveBeenCalled();
   });
@@ -183,7 +183,7 @@ describe('Comandos transacionais de estoque e orçamento', () => {
     const e = setup(), r = e.repositories;
     const order = e.fixtures.workOrder.startDiagnosis().submitQuote();
     r.workOrders.findByTrackingCode.mockResolvedValue(order); r.workOrders.save.mockImplementation(async o => o); r.events.append.mockResolvedValue(undefined);
-    expect(await e.cases.workOrders.decide.execute(order.trackingCode.value, false, 'Rever')).toMatchObject({ approved: false });
+    expect(await e.cases.workOrders.decide.execute(order.trackingCode.value, false, order.quoteVersion.value, 'Rever')).toMatchObject({ approved: false });
     expect(r.parts.findById).not.toHaveBeenCalled(); expect(r.parts.save).not.toHaveBeenCalled();
     expect(r.workOrders.save.mock.calls[0]![0].decisions[0]).toMatchObject({ approved: false, reason: 'Rever' });
   });
@@ -191,7 +191,7 @@ describe('Comandos transacionais de estoque e orçamento', () => {
     const e = setup(), r = e.repositories;
     const order = e.fixtures.workOrder.startDiagnosis().submitQuote();
     r.workOrders.findByTrackingCode.mockResolvedValue(order); r.parts.findById.mockResolvedValue(undefined);
-    await expect(e.cases.workOrders.decide.execute(order.trackingCode.value, true)).rejects.toMatchObject({ kind: 'not_found' });
+    await expect(e.cases.workOrders.decide.execute(order.trackingCode.value, true, order.quoteVersion.value)).rejects.toMatchObject({ kind: 'not_found' });
     expect(r.workOrders.save).not.toHaveBeenCalled(); expect(r.events.append).not.toHaveBeenCalled();
   });
   it('rollback reverte consumo parcial quando outra peça fica indisponível', async () => {
@@ -203,7 +203,7 @@ describe('Comandos transacionais de estoque e orçamento', () => {
     const order = await memory.repositories.workOrders.save(WorkOrder.create(data.customer.id!, data.vehicle.id!, 'Duas peças', items).startDiagnosis().submitQuote());
     await memory.repositories.parts.save(second.withdrawStock(second.stockQuantity));
     const cases = createUseCases(memory.repositories, memory.unitOfWork, memory.workOrderQueries);
-    await expect(cases.workOrders.decide.execute(order.trackingCode.value, true)).rejects.toMatchObject({ kind: 'conflict' });
+    await expect(cases.workOrders.decide.execute(order.trackingCode.value, true, order.quoteVersion.value)).rejects.toMatchObject({ kind: 'conflict' });
     expect((await memory.repositories.parts.findById(data.part.id!))?.stockQuantity).toBe(data.part.stockQuantity);
     expect(await memory.repositories.parts.movements(data.part.id!)).toEqual([]);
     expect(memory.store.state.events).toEqual([]);

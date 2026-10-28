@@ -159,13 +159,13 @@ export function registerRepositoryContract(label: string, withEnvironment: WithE
       expect(order.items.every(x => x.id !== undefined)).toBe(true);
       let saved = await r.save(order.startDiagnosis('Análise'));
       saved = await r.save(saved.submitQuote('Apresentado'));
-      saved = await r.save(saved.rejectQuote(undefined, 'Rever valor'));
-      saved = await r.save(saved.approveQuote(undefined, 'Aceito'));
+      saved = await r.save(saved.rejectQuote(saved.quoteVersion, 'Rever valor'));
+      saved = await r.save(saved.approveQuote(saved.quoteVersion, 'Aceito'));
       expect(saved.items.find(x => x.kind === ItemKind.Part)?.consumed).toBe(true);
       expect(saved.decisions.map(x => x.approved)).toEqual([false, true]);
       expect(saved.decisions[0]!.id).toBeDefined();
       saved = await r.save(saved.proposeAdditionalRepair(new WorkOrderItem(undefined, ItemKind.Part, part.id!, 'Peça adicional', new Quantity(1), part.price)));
-      saved = await r.save(saved.approveQuote());
+      saved = await r.save(saved.approveQuote(saved.quoteVersion));
       saved = await r.save(saved.finishRepair('Pronto'));
       saved = await r.save(saved.recordDelivery('Retirado'));
       expect(saved.status).toBe(WorkOrderStatus.Delivered);
@@ -199,7 +199,7 @@ export function registerRepositoryContract(label: string, withEnvironment: WithE
       expect(Object.keys(publicView!).sort()).toEqual(['trackingCode','status','complaint','vehicle','quoteTotalCents','quoteVersion','items','openedAt','updatedAt'].sort());
       expect(JSON.stringify(publicView)).not.toContain(customer.document.value);
       expect((publicView!.items as object[])[0]).not.toHaveProperty('catalogId');
-      let saved = await e.repositories.workOrders.save(order.startDiagnosis().submitQuote().approveQuote());
+      let saved = await e.repositories.workOrders.save(order.startDiagnosis().submitQuote().approveQuote(order.quoteVersion));
       const started = new Date('2026-01-01T12:00:00Z'), finished = new Date('2026-01-01T12:15:00Z');
       saved = await e.repositories.workOrders.save(new WorkOrder(saved.id, saved.customerId, saved.vehicleId,
         saved.complaint, saved.trackingCode, WorkOrderStatus.Finished, saved.items, saved.decisions,

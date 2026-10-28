@@ -66,7 +66,7 @@ rows = [
 hotspots = [
  ('H01','Reserva ou conferência?','Decidido: criação confere; não reserva. Aprovação confere novamente e consome atomicamente.'),
  ('H02','Rejeição cancela a OS?','Decidido: mantém AWAITING_APPROVAL, registra decisão e não consome estoque. Cancelamento não está no MVP.'),
- ('H03','Qual orçamento foi aprovado?','Decidido: decisões guardam versão e total. quoteVersion enviado pelo cliente rejeita versão antiga; campo ainda opcional por compatibilidade.'),
+ ('H03','Qual orçamento foi aprovado?','Decidido: decisões guardam versão e total. quoteVersion é obrigatório; uma versão desatualizada é recusada.'),
  ('H04','Reparo adicional pode executar?','Decidido: pausa e incrementa versão. Aprovação nova consome apenas peças ainda não consumidas.'),
  ('H05','Duas OS disputam a última peça?','Decidido: lock, versão otimista de Part e rollback conjunto de OS, saldo, movimentos e eventos.'),
  ('H06','Como o cliente é notificado?','Em aberto: não há email/SMS. O orçamento e o progresso são consultados pelo código público.'),

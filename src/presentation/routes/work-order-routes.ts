@@ -9,8 +9,8 @@ export const createPublicWorkOrderRoutes = (useCases: UseCases) => new Elysia()
   .get('/public/work-orders/:trackingCode', ({ params }) => useCases.workOrders.track.execute(params.trackingCode), {
     detail: { summary: 'Acompanha OS com código público não previsível' }
   })
-  .post('/public/work-orders/:trackingCode/decision', ({ params, body }) => useCases.workOrders.decide.execute(params.trackingCode, body.approved, body.reason, body.quoteVersion), {
-    body: t.Object({ approved: t.Boolean(), quoteVersion: t.Optional(t.Integer({ minimum: 1 })), reason: t.Optional(t.String({ maxLength: 500 })) }),
+  .post('/public/work-orders/:trackingCode/decision', ({ params, body }) => useCases.workOrders.decide.execute(params.trackingCode, body.approved, body.quoteVersion, body.reason), {
+    body: t.Object({ approved: t.Boolean(), quoteVersion: t.Integer({ minimum: 1 }), reason: t.Optional(t.String({ maxLength: 500 })) }),
     detail: { summary: 'Registra decisão do cliente sobre orçamento' }
   });
 

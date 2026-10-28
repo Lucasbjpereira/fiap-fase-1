@@ -55,7 +55,7 @@ describe('Objetos de valor', () => {
     expect(() => money.multiply(0)).toThrow();
     expect(new Quantity(1).equals(new Quantity(2))).toBe(false);
     expect(new Quantity(1).equals(new Quantity(1))).toBe(true);
-    expect(new QuoteVersion().next().value).toBe(2);
+    expect(new QuoteVersion(1).next().value).toBe(2);
   });
   it('saldo recebe, retira até zero, compara e rejeita retirada excessiva', () => {
     const balance = new StockBalance(2);
@@ -76,7 +76,7 @@ describe('Objetos de valor', () => {
   });
   it('orçamento compara conteúdo e versão, calculando quantidade de cada item', () => {
     const items = [factories.workOrderItem({ quantity: 2, unitPriceCents: 250 })];
-    const quote = Quote.calculate(items, new QuoteVersion());
+    const quote = Quote.calculate(items, new QuoteVersion(1));
     expect(quote.total.cents).toBe(500);
     expect(quote.equals(new Quote(new Money(500), new QuoteVersion(1)))).toBe(true);
     expect(quote.equals(new Quote(new Money(500), new QuoteVersion(2)))).toBe(false);
@@ -202,22 +202,22 @@ describe('Agregado OS e entidades internas', () => {
   });
   it('cada estado rejeita ações incompatíveis, inclusive repetição e versão antiga', () => {
     const received = factories.workOrder();
-    for (const action of [() => received.submitQuote(), () => received.approveQuote(), () => received.rejectQuote(), () => received.finishRepair(), () => received.recordDelivery(), () => received.proposeAdditionalRepair(factories.workOrderItem())]) expect(action).toThrow(DomainError);
+    for (const action of [() => received.submitQuote(), () => received.approveQuote(received.quoteVersion), () => received.rejectQuote(received.quoteVersion), () => received.finishRepair(), () => received.recordDelivery(), () => received.proposeAdditionalRepair(factories.workOrderItem())]) expect(action).toThrow(DomainError);
     const diagnosis = received.startDiagnosis();
     expect(() => diagnosis.startDiagnosis()).toThrow(DomainError);
     const awaiting = diagnosis.submitQuote();
     expect(() => awaiting.approveQuote(new QuoteVersion(2))).toThrow(DomainError);
     expect(() => awaiting.rejectQuote(new QuoteVersion(2))).toThrow(DomainError);
-    const rejected = awaiting.rejectQuote(undefined, 'Preço alto');
+    const rejected = awaiting.rejectQuote(awaiting.quoteVersion, 'Preço alto');
     expect(rejected.status).toBe(WorkOrderStatus.AwaitingApproval);
     expect(rejected.decisions[0]).toMatchObject({ approved: false, reason: 'Preço alto' });
-    const running = rejected.approveQuote();
+    const running = rejected.approveQuote(rejected.quoteVersion);
     expect(running.pendingEvents.at(-1)!.name).toBe(DomainEventName.ExecutionStarted);
     const revised = running.proposeAdditionalRepair(factories.workOrderItem());
     expect(revised.quoteVersion.value).toBe(2);
     expect(revised.pendingEvents.slice(-4).map(e => e.name)).toEqual([DomainEventName.AdditionalRepairProposed, DomainEventName.ExecutionPaused, DomainEventName.QuoteRevised, DomainEventName.QuoteSubmitted]);
-    expect(revised.approveQuote().pendingEvents.at(-1)!.name).toBe(DomainEventName.ExecutionResumed);
-    const delivered = revised.approveQuote().finishRepair().recordDelivery();
+    expect(revised.approveQuote(revised.quoteVersion).pendingEvents.at(-1)!.name).toBe(DomainEventName.ExecutionResumed);
+    const delivered = revised.approveQuote(revised.quoteVersion).finishRepair().recordDelivery();
     expect(delivered.pendingEvents.at(-1)!.name).toBe(DomainEventName.VehicleDelivered);
     expect(() => delivered.recordDelivery()).toThrow(DomainError);
     expect(() => new WorkOrder(1, 1, 1, 'Relato', received.trackingCode, WorkOrderStatus.Diagnosis).submitQuote()).toThrow(DomainError);

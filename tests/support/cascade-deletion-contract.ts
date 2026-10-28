@@ -57,7 +57,7 @@ export async function seedDeletionFixture(env: DeletionEnvironment) {
     ] });
     await status.execute(order.id!, WorkOrderStatus.Diagnosis);
     await status.execute(order.id!, WorkOrderStatus.AwaitingApproval);
-    if (approve) await decide.execute(order.trackingCode, true, 'Aceito', 1);
+    if (approve) await decide.execute(order.trackingCode, true, 1, 'Aceito');
     return order;
   }
   const order = await openOrder(customer.id!, vehicle.id!);
