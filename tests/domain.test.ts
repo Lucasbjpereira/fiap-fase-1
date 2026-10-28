@@ -55,7 +55,7 @@ describe('Objetos de valor', () => {
     expect(() => money.multiply(0)).toThrow();
     expect(new Quantity(1).equals(new Quantity(2))).toBe(false);
     expect(new Quantity(1).equals(new Quantity(1))).toBe(true);
-    expect(new QuoteVersion().next().value).toBe(2);
+    expect(new QuoteVersion(1).next().value).toBe(2);
   });
   it('saldo recebe, retira até zero, compara e rejeita retirada excessiva', () => {
     const balance = new StockBalance(2);
@@ -76,7 +76,7 @@ describe('Objetos de valor', () => {
   });
   it('orçamento compara conteúdo e versão, calculando quantidade de cada item', () => {
     const items = [factories.workOrderItem({ quantity: 2, unitPriceCents: 250 })];
-    const quote = Quote.calculate(items, new QuoteVersion());
+    const quote = Quote.calculate(items, new QuoteVersion(1));
     expect(quote.total.cents).toBe(500);
     expect(quote.equals(new Quote(new Money(500), new QuoteVersion(1)))).toBe(true);
     expect(quote.equals(new Quote(new Money(500), new QuoteVersion(2)))).toBe(false);

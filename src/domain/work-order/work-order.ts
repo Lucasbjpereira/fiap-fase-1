@@ -31,7 +31,7 @@ export class WorkOrder {
   static create(customerId: number, vehicleId: number, complaint: string, items: WorkOrderItem[]): WorkOrder {
     if (!items.length) throw new DomainError('A OS deve conter ao menos um serviço ou peça');
     const code = TrackingCode.generate();
-    const total = Quote.calculate(items, new QuoteVersion());
+    const total = Quote.calculate(items, new QuoteVersion(1));
     return new WorkOrder(undefined, customerId, vehicleId, complaint.trim(), code, WorkOrderStatus.Received, items, [],
       [new StatusChange(null, WorkOrderStatus.Received, 'OS criada')], total.version, [
         new DomainEvent(DomainEventName.WorkOrderReceived, AggregateType.WorkOrder, code.value, { customerId, vehicleId }),
