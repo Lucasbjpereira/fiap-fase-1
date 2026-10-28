@@ -133,7 +133,7 @@ describe('Controllers HTTP com aplicação real e persistência em memória', ()
     await j('GET', '/work-orders/99999', undefined, 404);
     await j('GET', '/work-orders/99999/history', undefined, 404);
     await j('GET', '/public/work-orders/missing', undefined, 404, false);
-    await j('POST', '/public/work-orders/missing/decision', { approved: true }, 404, false);
+    await j('POST', '/public/work-orders/missing/decision', { approved: true, quoteVersion: 1 }, 404, false);
     await j('DELETE', `/customers/${customer.id}`);
     await j('GET', publicPath, undefined, 404, false);
   });
