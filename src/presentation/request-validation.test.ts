@@ -1,8 +1,16 @@
 import { describe, expect, it } from 'bun:test';
-import { customerRoutes } from './routes/customer-routes';
-import { partRoutes } from './routes/part-routes';
-import { serviceRoutes } from './routes/service-routes';
-import { workOrderRoutes } from './routes/work-order-routes';
+import type { UseCases } from '../composition';
+import { createCustomerRoutes } from './routes/customer-routes';
+import { createPartRoutes } from './routes/part-routes';
+import { createServiceRoutes } from './routes/service-routes';
+import { createPublicWorkOrderRoutes, createWorkOrderRoutes } from './routes/work-order-routes';
+
+const invalidUseCases = {} as UseCases;
+const customerRoutes = createCustomerRoutes(invalidUseCases);
+const partRoutes = createPartRoutes(invalidUseCases);
+const serviceRoutes = createServiceRoutes(invalidUseCases);
+const workOrderRoutes = createWorkOrderRoutes(invalidUseCases);
+const publicWorkOrderRoutes = createPublicWorkOrderRoutes(invalidUseCases);
 
 describe('validação de entradas HTTP', () => {
   it('recusa IDs que não são inteiros positivos dentro do limite do banco', async () => {
@@ -20,6 +28,16 @@ describe('validação de entradas HTTP', () => {
 
     const workOrdersResponse = await workOrderRoutes.handle(new Request('http://localhost/work-orders?limit=1.5'));
     expect(workOrdersResponse.status).toBe(422);
+  });
+
+  it('recusa versão de orçamento acima do inteiro suportado pelo banco', async () => {
+    const response = await publicWorkOrderRoutes.handle(new Request('http://localhost/public/work-orders/codigo/decision', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ approved: true, quoteVersion: 2147483648 })
+    }));
+
+    expect(response.status).toBe(422);
   });
 
   it('recusa valores monetários acima do inteiro suportado pelo PostgreSQL', async () => {

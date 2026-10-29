@@ -1,9 +1,9 @@
 import { Elysia, t } from 'elysia';
-import { useCases } from '../../composition';
+import type { UseCases } from '../../composition';
 import { idParams, positiveInteger, priceCents } from '../request-schemas';
 import { serviceView } from '../presenters';
 
-export const serviceRoutes = new Elysia()
+export const createServiceRoutes = (useCases: UseCases) => new Elysia()
   .get('/services', async () => (await useCases.services.list.execute()).map(serviceView))
   .get('/services/:id', async ({ params }) => serviceView(await useCases.services.get.execute(params.id)), {
     params: idParams
@@ -16,5 +16,6 @@ export const serviceRoutes = new Elysia()
     body: t.Object({ name: t.Optional(t.String({ maxLength: 160 })), description: t.Optional(t.String()), priceCents: t.Optional(priceCents), estimatedMinutes: t.Optional(positiveInteger), active: t.Optional(t.Boolean()) })
   })
   .delete('/services/:id', ({ params }) => useCases.services.deactivate.execute(params.id), {
-    params: idParams
+    params: idParams,
+    detail: { summary: 'Desativa serviço, preservando os itens das OS existentes' }
   });
