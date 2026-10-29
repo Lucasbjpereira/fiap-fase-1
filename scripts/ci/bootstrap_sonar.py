@@ -5,9 +5,23 @@ import json
 import os
 from pathlib import Path
 import secrets
+import string
 import time
 from urllib.parse import urlencode, urlparse
 from urllib.request import Request, urlopen
+
+
+def generate_temporary_password() -> str:
+    alphabet = string.ascii_letters + string.digits + string.punctuation
+    password = [
+        secrets.choice(string.ascii_uppercase),
+        secrets.choice(string.ascii_lowercase),
+        secrets.choice(string.digits),
+        secrets.choice(string.punctuation),
+    ]
+    password.extend(secrets.choice(alphabet) for _ in range(44))
+    secrets.SystemRandom().shuffle(password)
+    return ''.join(password)
 
 
 def main() -> None:
@@ -47,7 +61,7 @@ def main() -> None:
             if separator:
                 properties[key.strip()] = value.strip()
     project = properties['sonar.projectKey']
-    password = secrets.token_urlsafe(36)
+    password = generate_temporary_password()
     request('/api/users/change_password', {'login': 'admin', 'previousPassword': 'admin', 'password': password}, password='admin')
     request('/api/projects/create', {'project': project, 'name': properties['sonar.projectName'], 'mainBranch': 'main'}, password=password)
 
