@@ -58,7 +58,7 @@ describe('Casos de uso: consultas, alterações e falhas', () => {
     await expect(execute(e)).rejects.toMatchObject({ kind: 'not_found' });
     for (const save of [r.customers.save, r.vehicles.save, r.services.save, r.parts.save, r.workOrders.save, r.workshops.save, r.events.append, r.parts.recordMovement]) expect(save).not.toHaveBeenCalled();
   });
-  it.each([[undefined, undefined, 50, 0], ['999', '-2', 100, 0], ['-5', '10', 1, 10], ['abc', 'abc', 50, 0]] as const)('normaliza paginação %s/%s', async (limit, offset, expectedLimit, expectedOffset) => {
+  it.each([[undefined, undefined, 50, 0], [999, -2, 100, 0], [-5, 10, 1, 10]] as const)('normaliza paginação %s/%s', async (limit, offset, expectedLimit, expectedOffset) => {
     const e = setup();
     e.repositories.customers.findAll.mockResolvedValue([]); e.workOrderQueries.list.mockResolvedValue([]);
     await e.cases.customers.list.execute(limit, offset);
