@@ -116,7 +116,7 @@ Use `createMockEnvironment()` de `tests/mocks` quando precisar controlar retorno
 
 O projeto exige cobertura de **90% em linhas e funções por arquivo medido**, incluindo domínio, aplicação, infraestrutura e apresentação. `test:coverage` sempre executa as integrações. Os testes PostgreSQL aplicam as migrações em schemas exclusivos e revertem os dados e o DDL ao terminar. Eles não precisam do seed nem de uma API já iniciada. `bun test`, `bun test --coverage`, `bun run test` e `bun run test:coverage` executam todas as integrações e precisam de um PostgreSQL em `DATABASE_URL`; para a avaliação sem configurar banco, use o serviço `test-runner` do Compose. Esses comandos não dependem de `RUN_INTEGRATION` e não ignoram testes. Para executar apenas testes sem banco, use `test:unit`, `test:controllers`, `test:repositories` ou `test:memory`.
 
-Veja a [matriz de testes, comandos e exclusões da cobertura](docs/testing/README.md), a [evidência de cobertura executada em 30/10/2026](docs/testing/coverage-evidence-2026-10-30.md), a [pipeline de qualidade](docs/testing/ci.md), o [relatório de vulnerabilidades](docs/security/vulnerability-report.md) e a [auditoria de dependências](docs/security/dependency-audit.md).
+Veja a [matriz de testes, comandos e exclusões da cobertura](docs/testing/README.md), a [evidência de cobertura executada em 30/10/2026](docs/testing/coverage-evidence-2026-10-30.md), a [pipeline de qualidade](docs/testing/ci.md), o [relatório de vulnerabilidades em PDF](docs/security/vulnerability-report.pdf) (com [fonte editável em Markdown](docs/security/vulnerability-report.md)) e a [auditoria de dependências](docs/security/dependency-audit.md).
 
 ## Integração contínua
 
