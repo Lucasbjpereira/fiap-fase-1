@@ -14,4 +14,4 @@ Execução feita na árvore local atual do projeto, com Bun 1.4.4 e PostgreSQL 1
 
 O comando executou as integrações com PostgreSQL real. A suíte incluiu o teste de configuração JWT que confirma a rejeição de chave ausente ou com menos de 32 caracteres, além dos fluxos HTTP, persistência, migrações e cascatas. O limiar de 90% por arquivo, definido em `bunfig.toml`, supera os 80% solicitados para o desafio.
 
-Essa evidência representa o working tree local de 30/10/2026. As alterações ainda precisam ser commitadas e publicadas para comporem a versão final avaliada.
+Essa evidência registra a execução local de 30/10/2026 sobre o código do commit `5affff0`, na branch `feat/fiap-fase1-pdf-requirements`. Quando a branch for publicada, confirme o CI e a revisão da PR antes de considerar essa versão final para avaliação.
