@@ -26,18 +26,16 @@ jobs:
       postgres:
         image: postgres:17-alpine
         env:
-          POSTGRES_DB: oficina
-          POSTGRES_USER: oficina
-          POSTGRES_PASSWORD: oficina_ci
+          POSTGRES_HOST_AUTH_METHOD: trust
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U oficina -d oficina"
+          --health-cmd "pg_isready -U postgres -d postgres"
           --health-interval 5s
           --health-timeout 3s
           --health-retries 20
     env:
-      DATABASE_URL: postgres://oficina:oficina_ci@127.0.0.1:5432/oficina
+      DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
     steps:
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -87,7 +85,6 @@ jobs:
       COMPOSE_PROJECT_NAME: oficina-ci-${{ github.run_id }}-${{ github.run_attempt }}
       SONAR_HOST_URL: http://localhost:9000
       COMPOSE_FILE: docker-compose.yml:.github/sonar-ci.compose.yml
-      SONAR_DB_PASSWORD: sonarqube_ci
       SONAR_CI_BOOTSTRAP: 'true'
     steps:
       - name: Checkout com histórico completo
@@ -109,6 +106,9 @@ jobs:
         with:
           name: test-reports
           path: coverage
+
+      - name: Gerar senha efêmera do banco Sonar
+        run: echo "SONAR_DB_PASSWORD=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
 
       - name: Preparar o host e iniciar o SonarQube da main
         run: |

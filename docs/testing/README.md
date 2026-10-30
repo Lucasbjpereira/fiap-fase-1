@@ -1,10 +1,10 @@
 # Estratégia e execução dos testes
 
-A pipeline completa e os checks obrigatórios estão descritos em [GitHub Actions](ci.md).
+O arquivo [GitHub Actions](ci.md) descreve a pipeline completa e os checks exigidos.
 
 ## Comandos
 
-Todos os comandos partem da raiz do projeto, após `bun install`.
+Execute os comandos na raiz do projeto depois de `bun install`.
 
 | Comando | Escopo | PostgreSQL necessário? |
 | --- | --- | --- |
@@ -21,12 +21,17 @@ Todos os comandos partem da raiz do projeto, após `bun install`.
 Para integração e cobertura:
 
 ```bash
+cp .env.example .env  # preencha localmente; defina a senha do banco e não a versione
+set -a
+. ./.env
+set +a
+export DATABASE_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:${POSTGRES_HOST_PORT}/${POSTGRES_DB}"
 docker compose up -d db
-DATABASE_URL=postgres://oficina:oficina_local@127.0.0.1:5432/oficina bun run test:integration
-DATABASE_URL=postgres://oficina:oficina_local@127.0.0.1:5432/oficina bun run test:coverage
+bun run test:integration
+bun run test:coverage
 ```
 
-Não é necessário iniciar a API, executar seed ou migrar previamente o banco: cada cenário integrado aplica as quatro migrações em seu próprio schema, dentro de uma transação revertida ao terminar. É necessário que o banco exista e que o usuário possa criar schemas. Os testes HTTP integrados iniciam e encerram a própria API em porta efêmera; não usam a porta 3000.
+Não inicie a API, rode o seed nem aplique as migrações antes da suíte. Cada cenário integrado cria um schema próprio, aplica as quatro migrações e reverte a transação ao terminar. O banco precisa estar disponível, e o usuário precisa ter permissão para criar schemas. Os testes HTTP sobem sua própria API em uma porta temporária; não usam a porta 3000.
 
 ## Matriz de cobertura comportamental
 
@@ -45,29 +50,29 @@ Não é necessário iniciar a API, executar seed ou migrar previamente o banco: 
 | Documentação HTTP | `tests/controllers.test.ts` | HTML de OpenAPI, especificação JSON com rotas, página/artefatos do Event Storming, arquivos inexistentes e nomes não permitidos |
 | Suporte de testes | `tests/infrastructure.test.ts` | Todos os métodos dos mocks, configuração obrigatória, isolamento, clear/reset, callback genérico e fábricas relacionadas válidas |
 
-Os testes de OpenAPI e Event Storming verificam respostas e conteúdo HTTP; não executam JavaScript de navegador nem atestam a renderização visual do Scalar.
+Os testes de OpenAPI e Event Storming conferem as respostas e o conteúdo HTTP. Eles não executam JavaScript no navegador nem avaliam a aparência do Scalar.
 
 ## Isolamento e dependências
 
-- `createUseCases(context, unitOfWork, queries)` compõe os casos de uso com portas injetadas. `createApp({ useCases, checkDatabase, jwtSecret, corsOrigin })` permite executar os controllers sem banco ou socket. A composição padrão de produção continua exportada.
-- `createMockEnvironment()` serve para controlar respostas, falhas e verificar chamadas. Veja [mocks e fábricas](mocks.md).
-- `createInMemoryEnvironment()` testa o comportamento persistente e os limites transacionais com estado real em memória.
-- `createPostgresTestEnvironment()` cria schema aleatório, aplica migrações e faz rollback inclusive do DDL. Os testes de restrições usam savepoints, para não invalidar o restante da transação.
-- As integrações não apagam nem alteram os registros do schema `public`, não dependem de credenciais administrativas do seed e podem ser repetidas.
+- `createUseCases(context, unitOfWork, queries)` monta os casos de uso com portas injetadas. `createApp({ useCases, checkDatabase, jwtSecret, corsOrigin })` permite executar os controllers sem banco ou socket. A composição de produção continua disponível.
+- `createMockEnvironment()` controla respostas e falhas e permite conferir chamadas. Veja [mocks e fábricas](mocks.md).
+- `createInMemoryEnvironment()` executa casos de uso com estado persistente em memória para conferir o comportamento transacional.
+- `createPostgresTestEnvironment()` cria um schema aleatório, aplica as migrações e reverte as mudanças, inclusive o DDL. Os testes de restrição usam savepoints para manter ativa a transação principal.
+- As integrações podem ser repetidas. Elas não alteram o schema `public` e não dependem das credenciais administrativas do seed.
 
-Para acrescentar um teste de contrato, edite `tests/support/repository-contract.ts`: o cenário será registrado nos dois adaptadores. Use fixtures novas por cenário e faça asserções sobre dados retornados, estado persistido e efeitos proibidos; contagem de chamadas sozinha não demonstra rollback.
+Para adicionar um teste de contrato, edite `tests/support/repository-contract.ts`. O cenário será executado nos dois adaptadores. Crie fixtures para cada cenário e confira os dados retornados, o estado persistido e os efeitos que não devem ocorrer. A contagem de chamadas, sozinha, não comprova rollback.
 
 ## Medição de cobertura
 
-`bunfig.toml` mantém limiar de **90% em linhas e funções**, aplicado por arquivo pelo Bun 1.3.8. A cobertura inclui domínio, aplicação, composição, repositórios PostgreSQL e em memória, consultas, event stores, DAO, UnitOfWork, schema Drizzle, aplicação HTTP, rotas e presenters.
+O projeto aplica o limiar de **90% em linhas e funções por arquivo**, definido em `bunfig.toml`. A medição inclui domínio, aplicação, composição, repositórios PostgreSQL e em memória, consultas, event stores, DAO, UnitOfWork, schema Drizzle, aplicação HTTP, rotas e presenters. Consulte os números da última execução na [evidência de cobertura](coverage-evidence-2026-10-30.md).
 
-`bun test`, `bun test --coverage`, `bun run test` e `bun run test:coverage` sempre executam as integrações. Não existe mais condição `RUN_INTEGRATION` nem seleção automática que pule testes por falta de banco: PostgreSQL indisponível provoca falha explícita. O comando de cobertura gera relatório no terminal e `coverage/lcov.info`, e falha se algum arquivo medido ficar abaixo de 90% em linhas ou funções. Para executar somente testes sem banco, use `test:unit`, `test:controllers`, `test:repositories` ou `test:memory`.
+`bun test`, `bun test --coverage`, `bun run test` e `bun run test:coverage` executam as integrações. Eles não usam `RUN_INTEGRATION` nem ignoram os testes quando o banco está indisponível; nesse caso, o comando falha. A cobertura aparece no terminal e em `coverage/lcov.info`. O comando retorna erro se algum arquivo medido ficar abaixo de 90% em linhas ou funções. Para rodar apenas testes sem banco, use `test:unit`, `test:controllers`, `test:repositories` ou `test:memory`.
 
 Exclusões explícitas da medição:
 
-- `src/index.ts`: inicialização do processo/servidor.
-- `src/infrastructure/database/connection.ts`: configuração da conexão de produção.
-- `src/infrastructure/database/migrate.ts` e `seed.ts`: pontos de entrada operacionais. As migrações SQL são aplicadas e exercitadas pelos testes integrados; o runner CLI e o seed de demonstração não têm cobertura automatizada nesta suíte.
-- Arquivos de testes, helpers, mocks e fábricas: suporte exercitado pelos testes, fora do percentual do código de produção.
+- `src/index.ts`: inicializa o processo e o servidor.
+- `src/infrastructure/database/connection.ts`: configura a conexão de produção.
+- `src/infrastructure/database/migrate.ts` e `seed.ts`: pontos de entrada operacionais. Os testes integrados aplicam e exercitam as migrações SQL; esta suíte não mede o runner CLI nem o seed de demonstração.
+- Arquivos de testes, helpers, mocks e fábricas: fazem parte do suporte de testes e ficam fora da cobertura do código de produção.
 
-Interfaces sem código executável não precisam de testes artificiais. Cobertura de linhas/funções não mede todos os caminhos possíveis, carga, concorrência entre conexões PostgreSQL distintas ou vulnerabilidades. Resultados executados estão em [verificações](../evidencias/verificacoes.md).
+Interfaces sem código executável não precisam de testes artificiais. Cobertura de linhas e funções não mede todos os caminhos, carga, concorrência entre conexões PostgreSQL ou vulnerabilidades.
