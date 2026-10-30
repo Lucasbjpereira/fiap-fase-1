@@ -158,7 +158,7 @@ Para gerar os quadros novamente, execute `python3 scripts/generate-event-stormin
 
 ## Documentação DDD e demonstração
 
-Consulte a [documentação DDD](docs/ddd/README.md) e sua [versão exportada em PDF](docs/ddd/documentacao-ddd.pdf), que descrevem o modelo de domínio e sua relação com a implementação. O link do vídeo público de demonstração será incluído aqui após a publicação.
+Consulte a [documentação DDD](docs/ddd/README.md), sua [versão exportada em PDF](docs/ddd/documentacao-ddd.pdf) e o [quadro de DDD e Event Storming no Miro](https://miro.com/app/board/uXjVEXyyV68=/?share_link_id=376913126076), disponível para visualização. Esses materiais descrevem o modelo de domínio e sua relação com a implementação. O link do vídeo público de demonstração será incluído aqui após a publicação.
 ## Limitações atuais do MVP
 
 - A API cobre as operações principais. Algumas listagens ainda não têm paginação ou filtros, e nem todos os recursos permitem atualizar todos os campos.

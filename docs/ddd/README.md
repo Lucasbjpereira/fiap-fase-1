@@ -4,6 +4,7 @@ O Event Storming está dividido em oito etapas e ligado ao código do projeto. O
 
 ## Abrir os quadros
 
+- O [quadro externo de DDD e Event Storming no Miro](https://miro.com/app/board/uXjVEXyyV68=/?share_link_id=376913126076) abre em modo somente leitura sem pedir acesso.
 - Com a API em execução, abra **http://localhost:3000/event-storming/**.
 - Sem API ou rede, abra `event-storming/index.html` no navegador. O visualizador inclui os oito SVGs e não usa CDN.
 - Cada etapa tem um SVG, uma fonte Mermaid e uma explicação em Markdown. Use zoom e barras de rolagem para ler os quadros. A impressão usa a etapa selecionada.
