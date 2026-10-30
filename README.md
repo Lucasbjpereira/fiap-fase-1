@@ -14,11 +14,13 @@ Backend MVP para organizar clientes, veículos, serviços, estoque e ordens de s
 
 ## Executar com Docker Compose
 
-Pré-requisito: Docker Desktop com Compose v2. Para iniciar a API para avaliação, não é necessário instalar Bun, criar `.env` ou preencher credenciais:
+Pré-requisito: Docker com Compose v2 (Docker Desktop no Windows/macOS ou Docker Engine no Linux). Para iniciar a API para avaliação, não é necessário instalar Bun, criar `.env` ou preencher credenciais:
 
 ```bash
 docker compose up --build
 ```
+
+No Linux com Docker Engine, se o comando retornar `permission denied` para `/var/run/docker.sock`, repita os comandos Docker com `sudo` ou conceda ao usuário acesso ao grupo `docker` e entre novamente na sessão. Esse grupo permite administrar o daemon Docker.
 
 O Compose espera o banco passar no healthcheck. Quando inicia, a API aplica as migrações e executa o seed com registros fictícios. A API fica em `http://localhost:3000`, o healthcheck em `http://localhost:3000/health`, a documentação OpenAPI/Scalar em `http://localhost:3000/openapi` e o JSON em `http://localhost:3000/openapi/json`. As portas publicadas aceitam conexões apenas pelo próprio computador. O PostgreSQL fica na porta 5432 por padrão; se ela estiver ocupada, copie `.env.example` para `.env` e altere `POSTGRES_HOST_PORT`.
 
@@ -38,6 +40,7 @@ bun run dev
 
 O seed inclui uma conta administrativa e cadastros de demonstração. A aplicação encerra a inicialização se não receber `DATABASE_URL` ou uma `JWT_SECRET` com ao menos 32 caracteres; o `.env.example` já fornece valores fictícios adequados para a avaliação local.
 Ao executar `bun run dev` diretamente no host, a API escuta somente em `127.0.0.1` por padrão. No Compose, ela escuta dentro da rede do container e a porta publicada continua limitada ao loopback do computador.
+Se você mudou `POSTGRES_HOST_PORT` e executar a API fora do container, ajuste também a porta em `DATABASE_URL` no `.env`; dentro do Compose, a API continua acessando o banco pelo endereço interno `db:5432`.
 
 ## Autenticação e demonstração
 

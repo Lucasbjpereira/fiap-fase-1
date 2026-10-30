@@ -40,6 +40,8 @@ docker compose -p oficina-tests --profile test run --build --rm test-runner
 docker compose -p oficina-tests --profile test down
 ```
 
+No Linux com Docker Engine, use `sudo` antes desses comandos se a conta ainda não tiver acesso a `/var/run/docker.sock`.
+
 O comando pode receber `bun run test:integration` para executar apenas as integrações. O serviço `test-db` não publica porta e não compartilha o volume do banco de demonstração; o runner aplica as migrações em schemas próprios e reverte cada cenário. O perfil de teste não inicia a API nem executa o seed.
 
 Não inicie a API, rode o seed nem aplique as migrações antes da suíte. Cada cenário integrado cria um schema próprio, aplica as quatro migrações e reverte a transação ao terminar. O banco precisa estar disponível, e o usuário precisa ter permissão para criar schemas. Os testes HTTP sobem sua própria API em uma porta temporária; não usam a porta 3000.
