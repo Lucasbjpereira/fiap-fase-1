@@ -14,35 +14,30 @@ Backend MVP para organizar clientes, veículos, serviços, estoque e ordens de s
 
 ## Executar com Docker Compose
 
-Pré-requisitos: Docker Desktop com Compose v2. Configure as variáveis no arquivo local antes de iniciar; ele fica ignorado pelo Git:
+Pré-requisito: Docker Desktop com Compose v2. Para iniciar a API para avaliação, não é necessário instalar Bun, criar `.env` ou preencher credenciais:
 
 ```bash
-cp .env.example .env
-# Edite .env: defina POSTGRES_PASSWORD, JWT_SECRET, ADMIN_EMAIL e ADMIN_PASSWORD.
-# Gere um valor hexadecimal diferente para POSTGRES_PASSWORD e JWT_SECRET com openssl rand -hex 32.
 docker compose up --build
 ```
 
-O Compose espera o banco passar no healthcheck. Quando inicia, a API aplica as migrações e executa o seed. A API fica em `http://localhost:3000`, o healthcheck em `http://localhost:3000/health`, a documentação OpenAPI/Scalar em `http://localhost:3000/openapi` e o JSON em `http://localhost:3000/openapi/json`. As portas publicadas aceitam conexões apenas pelo próprio computador. O PostgreSQL fica na porta 5432 por padrão; altere `POSTGRES_HOST_PORT` no `.env` se ela já estiver ocupada.
+O Compose espera o banco passar no healthcheck. Quando inicia, a API aplica as migrações e executa o seed com registros fictícios. A API fica em `http://localhost:3000`, o healthcheck em `http://localhost:3000/health`, a documentação OpenAPI/Scalar em `http://localhost:3000/openapi` e o JSON em `http://localhost:3000/openapi/json`. As portas publicadas aceitam conexões apenas pelo próprio computador. O PostgreSQL fica na porta 5432 por padrão; se ela estiver ocupada, copie `.env.example` para `.env` e altere `POSTGRES_HOST_PORT`.
 
-O Compose exige senha do PostgreSQL, uma chave JWT com ao menos 32 caracteres e credenciais administrativas definidas localmente. Não reutilize esses valores em outros ambientes. Para encerrar: `docker compose down`; para apagar também o banco local: `docker compose down -v`.
+Credenciais fictícias para login: `admin@oficina.local` / `TroqueEstaSenha123!`. Esses valores e os dados do seed servem apenas para a avaliação local. Para encerrar: `docker compose down`; para apagar também o banco e os dados locais: `docker compose down -v`.
 
 ## Execução sem container para a API
 
-Use Bun 1.3 ou superior e um PostgreSQL acessível. Copie `.env.example` para `.env`, preencha os valores exigidos e exporte a URL local do banco:
+Para executar a API fora do container, use Bun 1.3 ou superior. O PostgreSQL pode ser iniciado pelo Compose e as variáveis locais vêm do arquivo de exemplo:
 
 ```bash
-set -a
-. ./.env
-set +a
-export DATABASE_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:${POSTGRES_HOST_PORT}/${POSTGRES_DB}"
+cp .env.example .env
+docker compose up -d db
 bun install
-bun run db:migrate
-bun run db:seed
+bun run db:setup
 bun run dev
 ```
 
-O seed exige `ADMIN_PASSWORD`. A aplicação encerra a inicialização se não receber `DATABASE_URL` ou uma `JWT_SECRET` com ao menos 32 caracteres. O repositório não inclui senhas ou chaves operacionais.
+O seed inclui uma conta administrativa e cadastros de demonstração. A aplicação encerra a inicialização se não receber `DATABASE_URL` ou uma `JWT_SECRET` com ao menos 32 caracteres; o `.env.example` já fornece valores fictícios adequados para a avaliação local.
+Ao executar `bun run dev` diretamente no host, a API escuta somente em `127.0.0.1` por padrão. No Compose, ela escuta dentro da rede do container e a porta publicada continua limitada ao loopback do computador.
 
 ## Autenticação e demonstração
 
@@ -71,18 +66,19 @@ bun run test:memory
 bun run typecheck
 bun run mocks:check
 
-# Suíte completa e cobertura (PostgreSQL obrigatório; configure .env como acima):
-docker compose up -d db
-set -a
-. ./.env
-set +a
-export DATABASE_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:${POSTGRES_HOST_PORT}/${POSTGRES_DB}"
-bun run test
-bun run test:integration
-bun run test:coverage
+# Suíte completa com cobertura; Compose inicia um PostgreSQL isolado para os testes:
+docker compose -p oficina-tests --profile test run --build --rm test-runner
+
+# Somente testes de integração:
+docker compose -p oficina-tests --profile test run --build --rm test-runner bun run test:integration
+
+# Encerre e remova os containers da suíte:
+docker compose -p oficina-tests --profile test down
 
 bun run security:audit
 ```
+
+Os comandos Docker de teste não iniciam a API de demonstração nem usam o banco persistente dela. O banco dos testes não publica porta no computador; cada cenário cria e reverte seu schema. Também é possível usar os atalhos `bun run test:docker` e `bun run test:integration:docker` se Bun já estiver instalado no host.
 
 `bun run test:memory` executa os casos de uso e os repositórios em memória. Esse comando não precisa de Docker, PostgreSQL ou `DATABASE_URL`. Para criar um teste, chame `createInMemoryEnvironment()` de `src/infrastructure/in-memory/context.ts` e injete `repositories`, `unitOfWork` e `workOrderQueries` no caso de uso. Cada chamada cria um estado isolado.
 
@@ -115,7 +111,7 @@ const customer = await createCustomer.execute({ name: 'Marina Souza', document: 
 
 Use `createMockEnvironment()` de `tests/mocks` quando precisar controlar retornos e inspecionar chamadas. Cada chamada cria mocks dos sete repositórios, eventos, consultas de OS e UnitOfWork, além das entidades relacionadas. `bun run mocks:generate` gera os mocks a partir das interfaces; `bun run mocks:check` verifica se estão sincronizados. Veja [mocks e fábricas](docs/testing/mocks.md).
 
-O projeto exige cobertura de **90% em linhas e funções por arquivo medido**, incluindo domínio, aplicação, infraestrutura e apresentação. `test:coverage` sempre executa as integrações. Os testes PostgreSQL aplicam as migrações em schemas exclusivos e revertem os dados e o DDL ao terminar. Eles não precisam do seed nem de uma API já iniciada. `bun test`, `bun test --coverage`, `bun run test` e `bun run test:coverage` executam todas as integrações. Esses comandos não dependem de `RUN_INTEGRATION` e não ignoram testes. Todos exigem PostgreSQL. Para executar apenas testes sem banco, use `test:unit`, `test:controllers`, `test:repositories` ou `test:memory`.
+O projeto exige cobertura de **90% em linhas e funções por arquivo medido**, incluindo domínio, aplicação, infraestrutura e apresentação. `test:coverage` sempre executa as integrações. Os testes PostgreSQL aplicam as migrações em schemas exclusivos e revertem os dados e o DDL ao terminar. Eles não precisam do seed nem de uma API já iniciada. `bun test`, `bun test --coverage`, `bun run test` e `bun run test:coverage` executam todas as integrações e precisam de um PostgreSQL em `DATABASE_URL`; para a avaliação sem configurar banco, use o serviço `test-runner` do Compose. Esses comandos não dependem de `RUN_INTEGRATION` e não ignoram testes. Para executar apenas testes sem banco, use `test:unit`, `test:controllers`, `test:repositories` ou `test:memory`.
 
 Veja a [matriz de testes, comandos e exclusões da cobertura](docs/testing/README.md), a [evidência de cobertura executada em 30/10/2026](docs/testing/coverage-evidence-2026-10-30.md), a [pipeline de qualidade](docs/testing/ci.md), o [relatório de vulnerabilidades](docs/security/vulnerability-report.md) e a [auditoria de dependências](docs/security/dependency-audit.md).
 

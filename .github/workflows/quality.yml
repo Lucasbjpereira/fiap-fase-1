@@ -107,7 +107,7 @@ jobs:
           name: test-reports
           path: coverage
 
-      # Compose interpolates required variables across all services, including non-Sonar services.
+      # Use distinct generated credentials for the ephemeral SonarQube Compose stack.
       - name: Gerar ambiente temporário do Compose
         run: |
           set -euo pipefail
