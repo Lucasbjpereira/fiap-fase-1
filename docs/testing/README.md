@@ -4,7 +4,7 @@ O arquivo [GitHub Actions](ci.md) descreve a pipeline completa e os checks exigi
 
 ## Comandos
 
-Execute os comandos na raiz do projeto depois de `bun install`.
+Execute os comandos na raiz do projeto. Os comandos nativos precisam de `bun install`; o runner do Compose instala as dependências ao construir a imagem.
 
 | Comando | Escopo | PostgreSQL necessário? |
 | --- | --- | --- |
@@ -15,13 +15,15 @@ Execute os comandos na raiz do projeto depois de `bun install`.
 | `bun run test:memory` | Contratos acima, cascata e fluxos dos casos de uso em memória | Não |
 | `bun run test:integration` | Contratos PostgreSQL, cascata, migrações e API por HTTP real | Sim |
 | `bun run test:coverage` | Suíte completa com integração obrigatória e limiar de cobertura | Sim |
+| `docker compose -p oficina-tests --profile test run --build --rm test-runner` | Suíte completa com cobertura; o Compose prepara um PostgreSQL isolado | Não precisa de banco no host |
+| `docker compose -p oficina-tests --profile test run --build --rm test-runner bun run test:integration` | Somente integrações no PostgreSQL isolado do Compose | Não precisa de banco no host |
 | `bun run typecheck` | Verificação de tipos, incluindo testes, helpers e mocks | Não |
 | `bun run mocks:check` | Sincronização dos mocks com as interfaces | Não |
 
-Para integração e cobertura:
+Para integração e cobertura diretamente no host, com um PostgreSQL já disponível:
 
 ```bash
-cp .env.example .env  # preencha localmente; defina a senha do banco e não a versione
+cp .env.example .env  # opcional: personalize as configurações locais
 set -a
 . ./.env
 set +a
@@ -30,6 +32,15 @@ docker compose up -d db
 bun run test:integration
 bun run test:coverage
 ```
+
+Para avaliação sem configurar PostgreSQL ou instalar Bun no host, use o runner Docker:
+
+```bash
+docker compose -p oficina-tests --profile test run --build --rm test-runner
+docker compose -p oficina-tests --profile test down
+```
+
+O comando pode receber `bun run test:integration` para executar apenas as integrações. O serviço `test-db` não publica porta e não compartilha o volume do banco de demonstração; o runner aplica as migrações em schemas próprios e reverte cada cenário. O perfil de teste não inicia a API nem executa o seed.
 
 Não inicie a API, rode o seed nem aplique as migrações antes da suíte. Cada cenário integrado cria um schema próprio, aplica as quatro migrações e reverte a transação ao terminar. O banco precisa estar disponível, e o usuário precisa ter permissão para criar schemas. Os testes HTTP sobem sua própria API em uma porta temporária; não usam a porta 3000.
 
