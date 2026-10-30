@@ -460,7 +460,7 @@
     {
       "id": "H03",
       "question": "Qual orçamento foi aprovado?",
-      "decision": "Decidido: decisões guardam versão e total. quoteVersion enviado pelo cliente rejeita versão antiga; campo ainda opcional por compatibilidade."
+      "decision": "Decidido: decisões guardam versão e total. quoteVersion é obrigatório; uma versão desatualizada é recusada."
     },
     {
       "id": "H04",

@@ -2,15 +2,15 @@ services:
   db:
     image: postgres:17-alpine
     environment:
-      POSTGRES_DB: oficina
-      POSTGRES_USER: oficina
-      POSTGRES_PASSWORD: oficina_local
+      POSTGRES_DB: ${POSTGRES_DB:?Configure POSTGRES_DB in .env}
+      POSTGRES_USER: ${POSTGRES_USER:?Configure POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Configure POSTGRES_PASSWORD in .env}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:${POSTGRES_HOST_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U oficina -d oficina"]
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -20,13 +20,12 @@ services:
       NODE_ENV: development
       PORT: 3000
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
-      DATABASE_URL: postgres://oficina:oficina_local@db:5432/oficina
-      JWT_SECRET: ${JWT_SECRET:-local-demo-secret-change-before-sharing-123456}
-      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@oficina.local}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-TroqueEstaSenha123!}
-      PUBLIC_TRACKING_SECRET: ${PUBLIC_TRACKING_SECRET:-local-tracking-secret-change-before-sharing-123456}
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      JWT_SECRET: ${JWT_SECRET:?Configure JWT_SECRET in .env}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?Configure ADMIN_EMAIL in .env}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Configure ADMIN_PASSWORD in .env}
     ports:
-      - "3000:3000"
+      - "127.0.0.1:${API_HOST_PORT:-3000}:3000"
     depends_on:
       db:
         condition: service_healthy
@@ -41,11 +40,11 @@ services:
     environment:
       POSTGRES_DB: sonarqube
       POSTGRES_USER: sonarqube
-      POSTGRES_PASSWORD: ${SONAR_DB_PASSWORD:-sonarqube_local}
+      POSTGRES_PASSWORD: ${SONAR_DB_PASSWORD:-}
     volumes:
       - sonarqube_db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U sonarqube -d sonarqube"]
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -58,9 +57,9 @@ services:
     environment:
       SONAR_JDBC_URL: jdbc:postgresql://sonar-db:5432/sonarqube
       SONAR_JDBC_USERNAME: sonarqube
-      SONAR_JDBC_PASSWORD: ${SONAR_DB_PASSWORD:-sonarqube_local}
+      SONAR_JDBC_PASSWORD: ${SONAR_DB_PASSWORD:-}
     ports:
-      - "9000:9000"
+      - "127.0.0.1:9000:9000"
     volumes:
       - sonarqube_data:/opt/sonarqube/data
       - sonarqube_extensions:/opt/sonarqube/extensions
